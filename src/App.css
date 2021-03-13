@@ -1,0 +1,8 @@
+.App {
+  height: 100vh;
+
+  --font: 'Times New Roman', Times, serif;
+  --font-mono: monospace;
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+}
