@@ -18,7 +18,8 @@ html {
     --color-text: black;
     --color-bg: rgb(203, 231, 230);
     --color-accent: rgb(58, 19, 131);
-    --color-accent2: rgb(177, 35, 0);
+    --color-accent2: rgb(255, 51, 0);
+    --color-accent-focus: var(--color-accent2);
     --opacity-inactive: 0.5;
   }
   &.theme-dark {
@@ -26,6 +27,7 @@ html {
     --color-bg: rgb(7, 0, 14);
     --color-accent: rgb(171, 128, 251);
     --color-accent2: rgb(255, 115, 80);
+    --color-accent-focus: var(--color-accent);
     --opacity-inactive: 0.25;
   }
 
@@ -34,12 +36,56 @@ html {
 
   // width: 100%;
 
+  .star,
+  .active,
+  .arrow {
+    height: auto;
+    border: 0;
+    font-style: normal;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    // transition: transform 0.1s, font-size 0.1s;
+
+    > div {
+      transition: transform 0.1s;
+      user-select: none !important;
+      -webkit-user-select: none;
+    }
+    &:hover > div {
+      transform: scale(1.25);
+    }
+    &.active-bold:hover > div {
+      font-weight: bolder;
+    }
+    &:active > div {
+      transform: scale(0.8);
+    }
+  }
+
+  .arrow,
+  .edit {
+    &:hover > div {
+      transform: rotate(-45deg);
+    }
+    &:active > div {
+      transform: rotate(-45deg) scale(0.8);
+    }
+  }
+
   .arrow,
   .star,
   .edit,
   img {
     user-select: none !important;
     -webkit-user-select: none;
+  }
+
+  img {
+    display: block;
   }
 
   button {
@@ -62,6 +108,56 @@ html {
     &:disabled {
       opacity: var(--opacity-inactive);
     }
+  }
+
+  textarea {
+    padding: 5px;
+    color: var(--color-text);
+    margin-right: 10px;
+    min-height: calc(5em + 10px);
+    flex: 1;
+    background-color: transparent;
+    border-color: var(--color-accent);
+    // font-family: inherit;
+    font-size: inherit;
+  }
+
+  :not(.focus-color) {
+    &:focus:not(:active) {
+      transition: 0.1s;
+      outline: none;
+      // outline-offset: 5px;
+      // outline-color: var(--color-accent2);
+      // -webkit-tap-highlight-color: var(--color-accent2);
+      // box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3px var(--color-accent);
+      box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 7px var(--color-accent-focus);
+      z-index: 10;
+      position: relative;
+    }
+
+    div:focus:not(:active) {
+      box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 7px var(--color-accent-focus);
+    }
+    textarea:focus:not(:active) {
+      box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent-focus);
+    }
+  }
+  .focus-color:focus {
+    outline: none;
+    color: var(--color-accent-focus) !important;
+    box-shadow: 0;
+    border-color: var(--color-accent-focus) !important;
+    &::placeholder {
+      color: var(--color-accent-focus) !important;
+    }
+  }
+  *:active {
+    outline: none;
+    box-shadow: 0;
+  }
+
+  .date {
+    font-family: monospace;
   }
 
   .url {
@@ -97,7 +193,8 @@ html {
     font-style: italic;
   }
 
-  .timestamp {
+  .date {
+    color: var(--color-accent2);
     font-family: var(--font-mono);
   }
 

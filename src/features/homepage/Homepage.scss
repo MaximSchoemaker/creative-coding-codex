@@ -14,33 +14,12 @@
   // height: max-content;
   // min-height: 133%;
   // padding-top: 50px;
-  padding-bottom: 12%;
+  padding-bottom: 25%;
 
   box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
-
-  .star,
-  .add,
-  .arrow {
-    display: inline-block;
-    cursor: pointer;
-    // transition: transform 0.1s, font-size 0.1s;
-
-    div {
-      transition: transform 0.1s;
-    }
-    &:hover div {
-      transform: scale(1.25);
-    }
-    &:not(.arrow):hover div {
-      font-weight: bolder;
-    }
-    &:active div {
-      transform: scale(0.8);
-    }
-  }
 
   h1 {
     font-style: italic;
@@ -108,14 +87,24 @@
       display: flex;
 
       .search-bar {
-        all: unset;
+        // all: unset;
+        margin: 0;
+        padding: 0;
+        width: auto;
+        height: auto;
+        line-height: 1.5em;
+
+        background-color: transparent;
         display: block;
+        border: 0;
         margin-bottom: 50px;
         border-bottom: 1px solid var(--color-text);
         padding: 5px;
         color: var(--color-text);
         max-width: 25vw;
         &::placeholder {
+          font-size: 16px;
+          font-family: "Times New Roman", Times, serif;
           color: var(--color-text);
           font-style: italic;
         }
@@ -124,7 +113,10 @@
         margin-left: 50px;
 
         button {
-          all: unset;
+          // display: inline-block;
+          border: 0;
+          padding: 0;
+          height: auto;
           display: block;
           cursor: pointer;
           white-space: nowrap;
@@ -186,7 +178,7 @@
           h3 {
             flex: 1;
           }
-          .add {
+          .active {
             margin-left: 15px;
             font-size: 3em;
           }
@@ -278,10 +270,18 @@
         transition: height 1s, margin 1s;
 
         width: calc(100% - 60px);
-        padding-bottom: 5px;
+        padding-bottom: 15px;
 
         // margin-left: 10px;
 
+        .name {
+          button {
+            font-style: normal;
+            border: 0;
+            padding: 0;
+            height: auto;
+          }
+        }
         &:not(.open) .entry-header:hover {
           .name {
             text-decoration: underline;
@@ -300,7 +300,7 @@
 
         .entry-header {
           min-height: 0;
-          transition: min-height 1s;
+          transition: min-height 1s, box-shadow 0.1s;
 
           position: relative;
 
@@ -333,11 +333,11 @@
 
         .body {
           pointer-events: none;
+          margin-top: 10px;
 
           width: 100%;
-          margin-top: 10px;
           opacity: 0;
-          transition: height 1s, opacity 1s, padding 0.5s;
+          transition: height 1s, opacity 1s, padding 0.5s, visibility 1s;
 
           .link {
             position: relative;
@@ -345,7 +345,7 @@
               padding-left: 10px;
               margin-left: 10px;
             }
-            .add {
+            .active {
               padding-left: 10px;
               padding-right: 10px;
             }
@@ -428,9 +428,9 @@
                 // height: 0;
                 // vertical-align: bottom;
               }
-              .add-link {
+              .active-link {
                 margin-bottom: -2px;
-                .add {
+                .active {
                   padding-left: 10px;
                   padding-right: 10px;
                 }
@@ -481,10 +481,10 @@
             // align-items: flex-start;
             // overflow-x: auto;
             max-width: calc(100% / 5 - 10px);
-            min-width: 0;
+
             flex: 1;
             img {
-              flex: 1;
+              // flex: 1;
             }
           }
         }
@@ -497,17 +497,36 @@
           }
         }
 
+        &.mode-text {
+          .body {
+            margin-top: 27px;
+          }
+        }
         &.mode-image {
           h3 {
             font-size: 0;
           }
         }
         &:not(.open) {
-          &:not(.mode-image) h3.starred::before {
-            top: -1px;
-            left: -1em;
-            position: absolute;
-            content: "✦";
+          &.mode-image {
+            h3 {
+              visibility: hidden;
+            }
+            .preview-image {
+              margin-top: 0;
+            }
+          }
+          &:not(.mode-image) {
+            h3.starred::before {
+              top: -1px;
+              left: -1em;
+              position: absolute;
+              content: "✦";
+            }
+          }
+
+          .body {
+            visibility: hidden;
           }
         }
 
@@ -522,16 +541,6 @@
           top: calc(2em + 0.325em);
           div {
             font-size: 0.75em;
-          }
-        }
-
-        .arrow,
-        .edit {
-          &:hover div {
-            transform: rotate(-45deg);
-          }
-          &:active div {
-            transform: rotate(-45deg) scale(0.8);
           }
         }
 
@@ -564,7 +573,7 @@
           // height: 300px;
 
           .entry-header {
-            min-height: 75px;
+            // min-height: 75px;
             transition: min-height 0.1s;
           }
 

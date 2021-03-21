@@ -131,7 +131,6 @@ function EntryWrapper({ theme }) {
 	const entries = useSelector(selectEntries);
 
 	const entry = entries.find(e => e._id == id);
-	console.log(entries);
 	if (entry)
 		return (
 			<Entry entry={entry} theme={theme} />

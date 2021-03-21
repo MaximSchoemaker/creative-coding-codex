@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useResizeDetector } from 'react-resize-detector';
 import { Link } from "react-router-dom";
@@ -73,11 +73,11 @@ export function Homepage({ theme }) {
 			<header className="header">
 				<h1>Creative Coding Codex</h1><br />
 				<div className="settings-bar">
-					<input tabIndex={0} className="search-bar" type="text" placeholder="search..." onChange={(evt) => { setSearch(evt.target.value); setOpenEntry(null) }}></input>
+					<input className="search-bar focus-color" type="text" placeholder="search..." onChange={(evt) => { setSearch(evt.target.value); setOpenEntry(null) }}></input>
 					<div className="mode-select">
-						<button tabIndex={1} className={`text-btn ${mode === 'text' ? 'selected' : ''}`} onClick={() => setMode('text')}>text</button>
-						<button tabIndex={2} className={`text-images-btn ${mode === 'text-image' ? 'selected' : ''}`} onClick={() => setMode('text-image')}>text & images</button>
-						<button tabIndex={3} className={`images-btn ${mode === 'image' ? 'selected' : ''}`} onClick={() => setMode('image')}>images</button>
+						<button className={`text-btn focus-color ${mode === 'text' ? 'selected' : ''}`} onClick={() => setMode('text')}>text</button>
+						<button className={`text-images-btn focus-color ${mode === 'text-image' ? 'selected' : ''}`} onClick={() => setMode('text-image')}>text & images</button>
+						<button className={`images-btn focus-color ${mode === 'image' ? 'selected' : ''}`} onClick={() => setMode('image')}>images</button>
 					</div>
 				</div>
 
@@ -103,7 +103,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 		<div className="column" style={{ width: (100 / cols) + "%" }}>
 			{column.map(([cat, entries]) =>
 				<div key={cat} className="category">
-					{/*mode !== "image" &&*/ <h2>{cat}</h2>}
+					{mode !== "image" && <h2>{cat}</h2>}
 					<div>
 						{entries.map(entry => {
 							const open = openEntry && entry._id === openEntry._id;
@@ -122,7 +122,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 				</div>
 			)}
 			{last && user?.admin && <div className="category">
-				<h2 className="add" onClick={addEntry}><div>+</div></h2>
+				<h2><button className="active" onClick={addEntry}><div>+</div></button></h2>
 				{entries.map(entry => {
 					const open = openEntry && entry._id === openEntry._id;
 					return (
@@ -277,6 +277,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 	}
 
 	const submitDisabled = !name || links.some(l => !l.descriptor || !l.url);
+	const nameRef = useRef(null);
 
 	return (
 		<div
@@ -285,26 +286,32 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 		>
 			{ !removed ?
 				<div style={{ width: "100%" }}>
-					<div className="entry-header" ref={headerRef} onClick={onOpen}>
+					<div className="entry-header" ref={headerRef} onClick={onOpen} tabIndex={mode == "image" && !open && 0} onKeyDown={(evt) => {
+						if (evt.key == "Enter" && document.activeElement === evt.target && onOpen)
+							onOpen();
+					}}>
 						{<div className="title-container" style={{ height: titleHeight || 0 }}>
 							<h3 className={`${hasPreviewImage ? '' : 'no-preview-image'} ${starred ? 'starred' : ''}`} ref={titleRef}>
 								{!edit
-									? <>{(open || mode == "image") && <div className="arrow" onClick={onClose}><div>➳</div></div>}
-										{(open || mode == "image") && <div className="star" onClick={onStar}><div>{starred ? "✦" : "✧"}</div></div>}
-										{(open || mode == "image") && user?.admin && <div className="edit add" onClick={() => setEdit(true)}><div>✎</div></div>}
+									? <>{(open || mode == "image") && <button className="arrow focus-color" onClick={onClose}><div>➳</div></button>}
+										{(open || mode == "image") && <button className="star focus-color" onClick={onStar}><div>{starred ? "✦" : "✧"}</div></button>}
+										{(open || mode == "image") && user?.admin && <button className="edit active focus-color" onClick={() => setEdit(true)}><div>✎</div></button>}
 										<span className="name">
-											<Link to={`/entry/${entry._id}`} className="link">
-												{name || "[undefined]"}
-											</Link>
+											{open ?
+												<Link to={`/entry/${entry._id}`} ref={nameRef}>
+													{name || "[undefined]"}
+												</Link>
+												: <button >{name || "[undefined]"}</button>
+											}
 										</span>
 									</>
 									: <>
-										<input type="text" placeholder="name" value={name} onChange={(evt) => set_name(evt.target.value)}></input>
+										<input className="focus-color" type="text" placeholder="name" value={name} onChange={(evt) => set_name(evt.target.value)}></input>
 									</>
 								}
 							</h3>
 							{edit &&
-								<div className="add" onClick={onClickRemove}><div>×</div></div>
+								<button className="active" onClick={onClickRemove}><div>×</div></button>
 							}
 						</div>}
 						{hasPreviewImage &&
@@ -333,7 +340,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 								<div className="url">
 									resources: ({(links || []).length})
 									</div>
-								{edit && <span className="add-link"><span className="add" onClick={addLink}><div>+</div></span></span>}
+								{edit && <span className="active-link"><button className="active active-bold" onClick={addLink}><div>+</div></button></span>}
 							</div>
 
 						</div>
@@ -346,7 +353,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 										<div className="image-container" key={img.id} >
 											<img alt={name} src={API_BASE_URL + img.path} />
 											{edit &&
-												<div className="add" onClick={() => removeImage(img.id)}><div>×</div></div>
+												<div className="active active-bold" onClick={() => removeImage(img.id)}><div>×</div></div>
 											}
 										</div>
 									)}
@@ -367,7 +374,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 								<div className="comments">
 									{(comments.slice(0, 3)).map(({ timestamp, username, comment }) =>
 										<div className="comment" key={timestamp + comment}>
-											<span className="timestamp">{new Date(timestamp).toLocaleDateString()}: </span>
+											<span className="date">{new Date(timestamp).toLocaleDateString()}: </span>
 
 											<span className="username">{username}: </span>
 											{comment}</div>
@@ -381,10 +388,11 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 				</div>
 				: <div class="delete">Delete?</div>
 			}
-			{edit &&
+			{
+				edit &&
 				<div className="submit-container">
 					<button className="submit-entry" onClick={submitEntry} disabled={submitDisabled}>submit</button>
-					{/* <div className="add" onClick={onSubmitted} ><div>×</div></div> */}
+					{/* <div className="active" onClick={onSubmitted} ><div>×</div></div> */}
 					<button onClick={onClickCancel}>cancel</button>
 				</div>
 			}
@@ -396,7 +404,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 function Resource({ link: { descriptor, url } }) {
 	return (
 		<div className="link">
-			<div className="star"><div>✧</div></div>
+			<button className="star active-bold focus-color"><div>✧</div></button>
 			<h4>
 				{descriptor}:
 				<a href={url} target="_blank" rel="noreferrer noopener" className="url">{url}</a>
@@ -411,168 +419,12 @@ function EditResource({ link, onRemove, onChangeDescriptor, onChangeUrl }) {
 	return (
 		<div className="edit-link link">
 			<h4>
-				<input type="text" placeholder="descriptor" value={descriptor} onChange={onChangeDescriptor} /> :&nbsp;
+				<input className="focus-color" type="text" placeholder="descriptor" value={descriptor} onChange={onChangeDescriptor} /> :&nbsp;
 			</h4>
-			<h4 className="fake-url">	<input type="text" placeholder="url" value={url} onChange={onChangeUrl} />
+			<h4 className="fake-url ">	<input className="focus-color" type="text" placeholder="url" value={url} onChange={onChangeUrl} />
 			</h4>
-			<div className="add" onClick={onRemove}><div>×</div></div>
+			<button className="active active-bold" onClick={onRemove}><div>×</div></button>
 		</div>
 	);
 }
 
-// function EditEntry({ entry, mode, onRemove, onSubmitted, api, cancelEntry }) {
-// 	const open = true;
-
-// 	const [id, set_id] = useState(entry.id);
-// 	const [name, set_name] = useState(entry.name || "");
-// 	const [links, set_links] = useState(entry.links?.map((l, i) => ({ ...l, id: ids++ })) || [{ id: ids++, descriptor: "", url: "" }]);
-// 	const [images, set_images] = useState(entry.images || []);
-// 	const [comments, set_comments] = useState(entry.comments || []);
-
-// 	const [removed, setRemoved] = useState(false);
-
-// 	const addLink = () => set_links([...links, { id: ids++, url: "", descriptor: "" }]);
-// 	const removeLink = (id) => set_links(links.filter(l => l.id != id));
-// 	const edit_link_descriptor = (id, descriptor) => set_links(links.map(l => (l.id == id ? { ...l, descriptor } : l)));
-// 	const edit_link_url = (id, url) => set_links(links.map(l => (l.id == id ? { ...l, url } : l)));
-
-// 	const hasImages = (images || []).length > 0;
-// 	const hasComments = (comments || []).length > 0;
-
-// 	const [openHeight, setOpenHeight] = useState(0);
-// 	const { ref } = useResizeDetector({
-// 		onResize: (w, h) => setOpenHeight(h)
-// 	});
-// 	let { height: titleHeight, ref: titleRef } = useResizeDetector();
-// 	let { height: headerHeight, ref: headerRef } = useResizeDetector();
-
-// 	const hasPreviewImage = mode.match("image") && hasImages;
-// 	const dispatch = useDispatch();
-
-// 	const submitEntry = (evt) => {
-// 		// if (evt.target.disabled)
-// 		// 	return;
-
-// 		if (removed) {
-// 			fetch(API_BASE_URL + "entries/remove", { credentials: "include", method: "POST", body: JSON.stringify({ _id: entry._id }), headers: { "Content-Type": "application/json" } })
-// 				.then((res) => {
-// 					console.log(res);
-// 					if (res.ok)
-// 						return res.json().then(entries => {
-// 							dispatch(setEntries(entries));
-// 							onSubmitted();
-// 						});
-// 				}).catch((error) => {
-// 					console.error(error);
-// 				});
-
-// 		} else {
-// 			const newEntry = {
-// 				name,
-// 				links: links.map(l => ({ ...l, id: undefined })),
-// 				_id: entry._id
-// 			};
-// 			console.log("newEntry", newEntry);
-
-// 			fetch(API_BASE_URL + "entries/" + api, { credentials: "include", method: "POST", body: JSON.stringify(newEntry), headers: { "Content-Type": "application/json" } })
-// 				.then((res) => {
-// 					console.log(res);
-// 					if (res.ok)
-// 						return res.json().then(entries => {
-// 							dispatch(setEntries(entries));
-// 							onSubmitted();
-// 						});
-// 				}).catch((error) => {
-// 					console.error(error);
-// 				});
-// 		}
-// 	}
-
-// 	const onClickRemove = () => {
-// 		onRemove();
-// 		setRemoved(true);
-// 	}
-
-// 	const submitDisabled = false; //!name || links.some(l => !l.descriptor || !l.url);
-
-// 	return (
-// 		<div
-// 			className={`edit-entry entry open mode-${mode}`}
-// 			style={{ height: (open ? openHeight + headerHeight + 30 : headerHeight) || 18 }}
-// 		>
-// 			{ !removed &&
-// 				<div style={{ width: "100%" }}>
-// 					<div className="entry-header" ref={headerRef}>
-// 						{<div className="title-container" style={{ height: titleHeight || 55 }}>
-// 							<h3 className={`${hasPreviewImage ? '' : 'no-preview-image'}`} ref={titleRef}>
-// 								<input type="text" placeholder="name" value={name} onChange={(evt) => set_name(evt.target.value)}></input>
-// 							</h3>
-// 							<div className="add" onClick={onClickRemove}><div>×</div></div>
-// 						</div>}
-// 						{hasPreviewImage &&
-// 							<img alt={name} className="preview-image" src={API_BASE_URL + images[0].path} />
-// 						}
-// 					</div>
-// 					<div className="body" ref={ref} >
-// 						<div className="resources-container">
-// 							<ul>
-// 								{(links || []).map((link, i) =>
-// 									<li key={link.id}>
-// 										<EditLink
-// 											link={link}
-// 											onRemove={() => removeLink(link.id)}
-// 											onChangeDescriptor={(evt) => edit_link_descriptor(link.id, evt.target.value)}
-// 											onChangeUrl={(evt) => edit_link_url(link.id, evt.target.value)}
-// 										/>
-// 									</li>
-// 								)}
-// 							</ul>
-// 							<div className="trailing">
-// 								<div className="url">resources: ({(links || []).length})</div><span><span className="add" onClick={addLink}><div>+</div></span></span>
-// 							</div>
-// 						</div>
-
-
-// 						{entry._id &&
-// 							<div className="images-container">
-// 								{/* <h5>images:</h5> */}
-// 								<div className="images">
-// 									{(images.slice(mode === "image" ? 1 : 0, mode === "image" ? 7 : 6)).map((img, i) =>
-// 										<img alt={name} src={API_BASE_URL + img.path} key={i} />
-// 									)}
-// 								</div>
-// 								<div className="trailing">	<a className="url">images: ({images.length})</a>
-// 									<form method="post" encType="multipart/form-data" action={`${API_BASE_URL}upload?_id=${entry._id}`}>
-// 										<input type="file" name="file" required />
-// 										<button>upload</button>
-// 									</form>
-// 								</div>
-// 							</div>
-// 						}
-
-// 						{hasComments &&
-// 							<div className="comments-container">
-// 								<div className="comments">
-// 									{(comments.slice(0, 3)).map(({ timestamp, username, comment }) =>
-// 										<div className="comment" key={timestamp + comment}>
-// 											<span className="timestamp">{new Date(timestamp).toLocaleDateString()}: </span>
-
-// 											<span className="username">{username}: </span>
-// 											{comment}</div>
-// 									)}
-// 								</div>
-// 								<div className="trailing"><a className="url">comments: ({comments.length})</a></div>
-// 							</div>
-// 						}
-// 						{/* <div className="divider" /> */}
-// 					</div>
-// 				</div>
-// 			}
-// 			<div className="submit-container">
-// 				<button className="submit-entry" onClick={submitEntry} disabled={submitDisabled}>submit</button>
-// 				{/* <div className="add" onClick={onSubmitted} ><div>×</div></div> */}
-// 				<button onClick={onSubmitted}>cancel</button>
-// 			</div>
-// 		</div >
-// 	)
-// }
