@@ -1,46 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useResizeDetector } from 'react-resize-detector';
+import { useLocation, useHistory, Link } from "react-router-dom";
+
 
 import styles from './Entry.scss';
 import { selectUser } from "../homepage/userSlice";
+import { setComments, setEntry } from "../homepage/entriesSlice";
 
 
 const API_BASE_URL = "http://127.0.0.1:3001/"
 
 export function Entry({ entry }) {
-  const { name, links, images } = entry;
+  const { name, links, images, comments, resources } = entry;
 
-  const [mode, set_mode] = useState("resources");
-  const [resourcesOpen, set_resourcesOpen] = useState(true);
-  const [imagesOpen, set_imagesOpen] = useState(true);
-  const [commentsOpen, set_commentsOpen] = useState(true);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
 
+  const [resourcesOpen, set_resourcesOpen] = useState(params.get("cr") !== "true");
+  const [imagesOpen, set_imagesOpen] = useState(params.get("ci") !== "true");
+  const [commentsOpen, set_commentsOpen] = useState(params.get("cc") !== "true");
+
+  useEffect(() => {
+    const url = new URL(window.document.URL);
+    for (var [key] of url.searchParams.entries())
+      url.searchParams.delete(key);
+    if (!resourcesOpen) url.searchParams.set("cr", true);
+    if (!imagesOpen) url.searchParams.set("ci", true);
+    if (!commentsOpen) url.searchParams.set("cc", true);
+    window.history.replaceState(null, "", url.toString());
+  }, [resourcesOpen, imagesOpen, commentsOpen]);
 
   return (
     <div id="entry">
       <div className="header">
+        <Link to="/" className="arrow focus-color"><div>➳</div></Link>
         <h1>{name}</h1>
       </div>
       <div className="body">
         <div className="left">
 
-          <Panel title="Resources" className="resources" dir="horizontal"
+          <ResourcesPanel entryId={entry._id} resources={resources || []}
             open={resourcesOpen}
             openIcon={resourcesOpen && !imagesOpen}
             onOpen={() => set_resourcesOpen(true) || set_imagesOpen(false)}
             onClose={() => set_resourcesOpen(false) || set_imagesOpen(true)}
-          >
-            <ul>
-              {links.map(l =>
-                <li>
-                  {l.descriptor}: <a className="url" href={l.url}>{l.url}</a>
-                </li>
-              )}
-            </ul>
-          </Panel>
+          />
 
-          <ImagesPanel images={images}
+          <ImagesPanel images={images || []}
             open={imagesOpen}
             openIcon={imagesOpen && !resourcesOpen}
             onOpen={() => set_imagesOpen(true) || set_resourcesOpen(false)}
@@ -48,7 +55,7 @@ export function Entry({ entry }) {
           />
         </div>
 
-        <CommentsPanel comments={comments}
+        <CommentsPanel entryId={entry._id} comments={comments || []}
           open={commentsOpen}
           openIcon={commentsOpen}
           onOpen={() => set_commentsOpen(true)}
@@ -73,6 +80,78 @@ function Panel({ children, className, title, dir, open, openIcon, onOpen, onClos
         </div>
       </div>
     </div>
+  );
+}
+
+function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId }) {
+
+  const [descriptor, set_descriptor] = useState("");
+  const [url, set_url] = useState("");
+  const dispatch = useDispatch();
+
+  const onSubmit = () => {
+    const resource = { descriptor, url };
+
+    fetch(`${API_BASE_URL}entries/${entryId}/resource`, { credentials: "include", body: JSON.stringify(resource), method: "POST", headers: { "Content-Type": "application/json" } })
+      .then((res) => {
+        console.log(res);
+        if (res.ok)
+          return res.json().then(entry => {
+            dispatch(setEntry(entry));
+            set_url("");
+            set_descriptor("");
+          });
+      }).catch((error) => {
+        console.error(error);
+      });
+  }
+
+  return (
+    <Panel title="Resources" className="resources" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}>
+      <div className="resources-container">
+        {resources.map(resource =>
+          <Resource resource={resource} />
+        )}
+      </div>
+      <div className="add-resource">
+        <input type="text" placeholder="descriptor" value={descriptor} onChange={(evt) => set_descriptor(evt.target.value)} />
+        <input type="text" placeholder="url" value={url} onChange={(evt) => set_url(evt.target.value)} />
+        <button disabled={!url || !descriptor} onClick={onSubmit}>submit</button>
+      </div>
+    </Panel>
+  );
+}
+
+function Resource({ resource }) {
+  const { _id, descriptor, url, metadata } = resource;
+  const starred = false;
+
+  let { height: titleHeight, ref: titleRef } = useResizeDetector();
+  let { height: bodyHeight, ref: bodyRef } = useResizeDetector();
+  const height = (titleHeight || 0) + (bodyHeight || 0) + (bodyHeight ? 10 : 0)
+
+  return (
+    <div id="resource" >
+      <button className="star focus-color" ><div>{starred ? "✦" : "✧"}</div></button>
+      <div className="resource-container">
+        <div className="resource-body" style={{ height }}>
+          {metadata?.image &&
+            <div className="resource-image-container">
+              <img className="resource-image" src={metadata.image} />
+            </div>
+          }
+          <div className="resource-text">
+            <h4 className="resource-name" ref={titleRef}>{metadata?.name || descriptor}</h4>
+            {metadata?.description &&
+              <span className="resource-description" ref={bodyRef}>{metadata.description}</span>
+            }
+          </div>
+        </div>
+        <div className="resource-footer">
+          <a href={url} target="_blank" className="url" href={url}>{url}</a>
+        </div>
+      </div >
+    </ div>
   );
 }
 
@@ -109,78 +188,135 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose }) {
   );
 }
 
-var comments = [
-  { by: { username: "MaximSchoemaker" }, timestamp: new Date().getTime(), text: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Minima totam atque non alias veritatis, assumenda saepe dolor explicabo maxime expedita vel obcaecati sunt debitis aspernatur corporis fugit. Quaerat, fugiat. Explicabo sapiente aspernatur earum voluptas, est laborum ad modi laboriosam dolorum minus beatae harum omnis nam vitae illo necessitatibus aut corporis quibusdam laudantium neque repudiandae eum nostrum tempora dignissimos? Similique fugit sed, dolores vel perferendis at consequatur laboriosam quos, iste eveniet minus. Ex rerum libero debitis velit odio! Hic iusto odio doloremque exercitationem, rerum quos qui minima corporis consequuntur sint totam fuga in natus quidem ullam error officia. Quasi, harum enim.", },
-  { by: { username: "MaximSchoemaker" }, timestamp: new Date().getTime(), reply: { type: "comment", id: 0 }, text: "Lorem ipsum, dolor sit amet consectetur adipisicing elit." },
-  { by: { username: "MaximSchoemaker" }, timestamp: new Date().getTime(), reply: { type: "comment", id: 1 }, text: "Lorem ipsum, dolor sit amet consectetur adipisicing elit." },
-  { by: { username: "MaximSchoemaker" }, timestamp: new Date().getTime(), /*reply: { type: "comment", id: 0 },*/ text: "Lorem ipsum, dolor sit amet consectetur adipisicing elit." },
-].map((c, i) => ({ ...c, id: i }));
 
-function CommentsPanel({ comments, open, openIcon, onOpen, onClose }) {
+function CommentsPanel({ comments, entryId, open, openIcon, onOpen, onClose }) {
 
   comments = comments.map(c => ({ ...c, replies: [] }));
-  const replyComments = comments.filter(c => c.reply?.type === "comment");
+  const replyComments = comments.filter(c => c.replyTo?.type === "comment");
+
   replyComments.forEach(rc => {
-    const c = comments.find(c => c.id == rc.reply.id);
+    let c = comments.find(c => c._id == rc.replyTo.id);
+    if (!c) {
+      c = { _id: rc.replyTo.id, text: "[deleted]", by: { username: "[deleted]" }, replies: [], deleted: true }
+      comments.push(c);
+    }
     c.replies.push(rc);
   });
-  comments = comments.filter(c => !c.reply);
+  comments = comments.filter(c => !c.replyTo);
+  comments.sort((c1, c2) => c2.timestamp - c1.timestamp);
+
+  const user = useSelector(selectUser);
+
+  const dispatch = useDispatch();
+  const onReply = (text, replyTo, success) => {
+    const reply = {
+      text,
+      timestamp: new Date().getTime(),
+      replyTo: replyTo && {
+        type: "comment", id: replyTo,
+      }
+    }
+
+    fetch(`${API_BASE_URL}entries/${entryId}/comment`, { credentials: "include", body: JSON.stringify(reply), method: "POST", headers: { "Content-Type": "application/json" } })
+      .then((res) => {
+        console.log(res);
+        if (res.ok)
+          return res.json().then(entry => {
+            dispatch(setComments({ entryId, comments: entry.comments }));
+            success();
+          });
+      }).catch((error) => {
+        console.error(error);
+      });
+  }
+
+  const onDelete = (commentId) => {
+    fetch(`${API_BASE_URL}entries/${entryId}/comment/${commentId}`, { credentials: "include", method: "DELETE", headers: { "Content-Type": "application/json" } })
+      .then((res) => {
+        console.log(res);
+        if (res.ok)
+          return res.json().then(entry => {
+            dispatch(setComments({ entryId, comments: entry.comments }));
+          });
+      }).catch((error) => {
+        console.error(error);
+      });
+  }
+
 
   return (
     <Panel title="Comments" className="right comments" dir="vertical" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}>
       <div className="comments-container">
+        {user &&
+          <Reply onSubmit={onReply} text="comment" />
+        }
+
         {comments.map(comment =>
-          <Comment comment={comment} />
+          <Comment onReply={onReply} onDelete={onDelete} comment={comment} />
         )}
-        <Reply text="comment" />
       </div>
     </Panel>
   );
 }
 
-function Comment({ comment }) {
+function Comment({ onReply, onDelete, comment }) {
   const user = useSelector(selectUser);
 
-  const { id, text, by: { username }, timestamp, replies } = comment;
-  const date = new Date(timestamp).toLocaleDateString();
+  const { _id, text, by, timestamp, replies, deleted } = comment;
+  const date = timestamp && new Date(timestamp).toLocaleDateString();
+
+  const byUser = by && user?._id == by._id;
+  const [writeReply, set_writeReply] = useState(false);
+
+  replies.sort((r1, r2) => r2.timestamp - r1.timestamp);
 
   return (
-    <div id="comment" key={id}>
+    <div id="comment" key={_id}>
       <div className="comment-header">
         <span className="date">{date} </span>
-        <span className="username">{username}: </span>
+        {/* <Link to={`/user/${by._id}`} className="username">{by.username}: </Link> */}
+        <span className="username">{by.username}: </span>
       </div>
       <div className="comment-body">
         <div className="text">{text}</div>
-        {user &&
-          <Reply onSubmit={() => { }} text="reply" />
+        {!writeReply
+          ? <div className="comment-footer">
+            {user && !deleted &&
+              <button className="write-reply-button text-button" onClick={() => set_writeReply(true)}>reply</button>
+            }
+            {byUser &&
+              <button className="text-button" onClick={() => onDelete(_id)}>delete</button>
+            }
+          </div>
+          : <Reply onSubmit={onReply} replyToId={_id} text="reply" onClose={() => set_writeReply(false)} />
         }
       </div>
       <div className="replies">
         {replies.map(rc =>
-          <Comment comment={rc} />
+          <Comment onReply={onReply} onDelete={onDelete} comment={rc} />
         )}
       </div>
-    </div>
+    </div >
   )
 }
 
-function Reply({ onSubmit, text }) {
-  const [writeReply, set_writeReply] = useState(false);
+function Reply({ onSubmit, text, replyToId, onClose }) {
   const [reply, set_reply] = useState("");
 
   return (
     <div id="reply">
-      {!writeReply
-        ? <button className="write-reply-button" onClick={() => set_writeReply(true)}>{text}</button>
-        : <div className="write-reply">
-          {text}:
+      <div className="write-reply">
+        {text}:
         <div className="write-reply-body">
-            <textarea value={reply} onChange={(evt) => set_reply(evt.target.value)} />
-            <button className="submit-reply-button" >submit</button>
-          </div>
+          <textarea value={reply} onChange={(evt) => set_reply(evt.target.value)} />
+          <button className="submit-reply-button" onClick={() =>
+            onSubmit(reply, replyToId, () => {
+              set_reply("");
+              onClose()
+            })
+          }>submit</button>
         </div>
-      }
+      </div>
     </div>
   );
 }

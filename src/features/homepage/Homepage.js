@@ -39,12 +39,14 @@ export function Homepage({ theme }) {
 	}, []);
 
 	const rankedData = entries.map((entry, i) => {
-		const blob = entry.name
-			+ (entry.tags || []).reduce((tot, tag) => tot + tag, "")
-			+ (entry.links || []).reduce((tot, link) => tot + link.url + link.descriptor, "").toLocaleLowerCase()
+		// const blob = entry.name
+		// 	+ (entry.tags || []).reduce((tot, tag) => tot + tag, "")
+		// 	+ (entry.resources || []).reduce((tot, resource) => tot + resource.url + resource.descriptor, "").toLocaleLowerCase()
+		const blob = JSON.stringify(entry).toLocaleLowerCase();
+		console.log(blob);
 		const rank = search.split(" ").reduce((tot, s) => tot + (blob.match(s.toLocaleLowerCase()) ? 1 : 0), 0)
-		const links = (entry.links || []).map(l => ({ ...l }));
-		return { ...entry, links, rank };
+		const resources = (entry.resources || []).map(l => ({ ...l }));
+		return { ...entry, resources, rank };
 	}).sort((e1, e2) => e2.rank - e1.rank);
 
 	const filteredData = rankedData.filter((entry) => entry.rank > 0 && (mode !== "image" || entry?.images?.length > 0));
@@ -147,13 +149,13 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 
 
 function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubmitted, onCancel }) {
-	// const { name, links, images, comments, id } = entry;
+	// const { name, resources, images, comments, id } = entry;
 
 	const user = useSelector(selectUser);
 
 	const [id, set_id] = useState(entry.id);
 	const [name, set_name] = useState(entry.name || "");
-	const [links, set_links] = useState(entry.links?.map((l, i) => ({ ...l, id: ids++ })) || [{ id: ids++, descriptor: "", url: "" }]);
+	const [resources, set_resources] = useState(entry.resources?.map((l, i) => ({ ...l, id: ids++ })) || [{ id: ids++, descriptor: "", url: "" }]);
 	const [images, set_images] = useState(entry.images?.map((img, i) => ({ ...img, id: ids++ })) || []);
 	const [comments, set_comments] = useState(entry.comments || []);
 
@@ -165,10 +167,10 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 	useEffect(() => !edit && removed && setRemoved(false), [edit]);
 	useEffect(() => !open && edit && setEdit(false), [open]);
 
-	const addLink = () => set_links([...links, { id: ids++, url: "", descriptor: "" }]);
-	const removeLink = (id) => set_links(links.filter(l => l.id != id));
-	const edit_link_descriptor = (id, descriptor) => set_links(links.map(l => (l.id == id ? { ...l, descriptor } : l)));
-	const edit_link_url = (id, url) => set_links(links.map(l => (l.id == id ? { ...l, url } : l)));
+	const addLink = () => set_resources([...resources, { id: ids++, url: "", descriptor: "" }]);
+	const removeLink = (id) => set_resources(resources.filter(l => l.id != id));
+	const edit_link_descriptor = (id, descriptor) => set_resources(resources.map(l => (l.id == id ? { ...l, descriptor } : l)));
+	const edit_link_url = (id, url) => set_resources(resources.map(l => (l.id == id ? { ...l, url } : l)));
 
 	const removeImage = (id) => set_images(images.filter(img => img.id != id));
 
@@ -176,7 +178,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 	const hasComments = (comments || []).length > 0;
 
 	const [openHeight, setOpenHeight] = useState(0
-		//		+ (links || []).length * 18
+		//		+ (resources || []).length * 18
 		//	+ (mode === "text-image" && hasImages ? 150 + 14 : 0)
 	);
 	const { ref } = useResizeDetector({
@@ -245,8 +247,9 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 		} else {
 			const newEntry = {
 				name,
-				links: links.map(l => ({ ...l, id: undefined })),
+				resources: resources.map(l => ({ ...l, id: undefined })),
 				images: images.map(img => ({ ...img, id: undefined })),
+				comments: comments,
 				_id: entry._id
 			};
 			console.log("newEntry", newEntry);
@@ -276,7 +279,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 		setEdit(false);
 	}
 
-	const submitDisabled = !name || links.some(l => !l.descriptor || !l.url);
+	const submitDisabled = !name || resources.some(l => !l.descriptor || !l.url);
 	const nameRef = useRef(null);
 
 	return (
@@ -298,7 +301,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 										{(open || mode == "image") && user?.admin && <button className="edit active focus-color" onClick={() => setEdit(true)}><div>✎</div></button>}
 										<span className="name">
 											{open ?
-												<Link to={`/entry/${entry._id}`} ref={nameRef}>
+												<Link to={`/entry/${entry._id}`} ref={nameRef} className="link">
 													{name || "[undefined]"}
 												</Link>
 												: <button >{name || "[undefined]"}</button>
@@ -321,7 +324,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 					<div className="body" ref={ref} >
 						<div className="resources-container">
 							<ul>
-								{(links || []).map((link, i) =>
+								{(resources || []).map((link, i) =>
 									<li key={i}>
 										{!edit
 											? <Resource link={link} />
@@ -335,12 +338,16 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 									</li>
 								)}
 							</ul>
-							{/* <div className="trailing"><a className="url">resources: ({(links || []).length})</a></div> */}
+							{/* <div className="trailing"><a className="url">resources: ({(resources || []).length})</a></div> */}
 							<div className="trailing">
-								<div className="url">
-									resources: ({(links || []).length})
-									</div>
-								{edit && <span className="active-link"><button className="active active-bold" onClick={addLink}><div>+</div></button></span>}
+								{!edit
+									? <Link className="url" to={`/entry/${entry._id}?ci=true&cc=true`}>
+										resources: ({(resources || []).length})
+									</Link>
+									: <>
+										<div className="url">	resources: ({(resources || []).length})
+									</div> <span className="active-link"><button className="active active-bold" onClick={addLink}><div>+</div></button></span>
+									</>}
 							</div>
 
 						</div>
@@ -359,7 +366,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 									)}
 								</div>
 								<div className="trailing">
-									<a className="url">images: ({images.length})</a>
+									<Link className="url" to={`/entry/${entry._id}?cr=true&cc=true`}>images: ({images.length})</Link>
 									{edit &&
 										<form method="post" encType="multipart/form-data" action={`${API_BASE_URL}upload?_id=${entry._id}`}>
 											<input type="file" name="file" required />
@@ -372,15 +379,15 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 						{hasComments &&
 							<div className="comments-container">
 								<div className="comments">
-									{(comments.slice(0, 3)).map(({ timestamp, username, comment }) =>
-										<div className="comment" key={timestamp + comment}>
+									{([...comments].reverse().slice(0, 3)).map(({ _id, timestamp, by, text }) =>
+										<div className="comment" key={_id}>
 											<span className="date">{new Date(timestamp).toLocaleDateString()}: </span>
 
-											<span className="username">{username}: </span>
-											{comment}</div>
+											<span className="username">{by.username}: </span>
+											{text}</div>
 									)}
 								</div>
-								<div className="trailing"><a className="url">comments: ({comments.length})</a></div>
+								<div className="trailing"><Link className="url" to={`/entry/${entry._id}?cr=true&ci=true`}>comments: ({comments.length})</Link></div>
 							</div>
 						}
 						{/* <div className="divider" /> */}
@@ -421,7 +428,7 @@ function EditResource({ link, onRemove, onChangeDescriptor, onChangeUrl }) {
 			<h4>
 				<input className="focus-color" type="text" placeholder="descriptor" value={descriptor} onChange={onChangeDescriptor} /> :&nbsp;
 			</h4>
-			<h4 className="fake-url ">	<input className="focus-color" type="text" placeholder="url" value={url} onChange={onChangeUrl} />
+			<h4 className="url-input">	<input className="focus-color" type="text" placeholder="url" value={url} onChange={onChangeUrl} />
 			</h4>
 			<button className="active active-bold" onClick={onRemove}><div>×</div></button>
 		</div>

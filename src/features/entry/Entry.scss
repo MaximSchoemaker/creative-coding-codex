@@ -35,10 +35,29 @@
     margin: 0;
   }
 
+  h3 {
+    margin-bottom: 0;
+  }
+
+  h4 {
+    margin: 0;
+    font-style: italic;
+    font-size: 1.25rem;
+  }
+
   padding-left: 5vw;
   padding-right: 5vw;
 
   .header {
+    position: relative;
+    .arrow {
+      text-decoration: none;
+      color: var(--color-text);
+      position: absolute;
+      left: -1.1em;
+      top: 0.2em;
+      font-size: 3em;
+    }
   }
 
   .body {
@@ -154,7 +173,6 @@
           // overflow-y: auto;
           // overflow-x: auto;
           padding: 25px;
-          padding-bottom: 0;
         }
 
         flex: 1;
@@ -193,9 +211,41 @@
       flex-direction: column;
       gap: 5px;
 
+      .resources {
+        .panel-scroll {
+          display: flex;
+          flex-direction: column;
+          .panel-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            // align-items: center;
+
+            .resources-container {
+              width: 100%;
+              display: flex;
+              flex-wrap: wrap;
+              justify-items: center;
+            }
+            .add-resource {
+              // max-width: 50%;
+              display: flex;
+              gap: 15px;
+              input[placeholder="descriptor"] {
+                max-width: 100px;
+              }
+            }
+          }
+        }
+      }
+
       .images {
         h2 {
           margin-bottom: 15px;
+        }
+        .panel-scroll {
+          padding-bottom: 0;
         }
         .panel-body {
           margin-left: -10px;
@@ -231,6 +281,76 @@
   }
 }
 
+#resource {
+  margin: 2em;
+  max-width: 500px;
+  display: block;
+  color: inherit;
+  text-decoration: inherit;
+
+  margin-left: 3em;
+  position: relative;
+  .star {
+    position: absolute;
+    left: -1.2em;
+    font-size: 2em;
+    top: 0.5em;
+    transform: translateY(-50%);
+  }
+  .resource-container {
+    border: 1px solid var(--color-accent);
+    width: 100%;
+
+    .resource-body {
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      max-height: 8em;
+      width: 100%;
+      padding: 5px;
+      display: flex;
+
+      display: flex;
+      gap: 10px;
+      // height: 100px;
+      .resource-text {
+        padding-right: 5px;
+        min-width: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .resource-name {
+          // font-size: 2em;
+        }
+        .resource-description {
+        }
+      }
+      .resource-image-container {
+        flex: 0.5;
+
+        img {
+          width: 100%;
+          height: 100%;
+          min-height: 0;
+          min-width: 0;
+          object-fit: cover;
+          // height: auto;
+        }
+      }
+    }
+    .resource-footer {
+      border-top: 1px solid var(--color-accent);
+      padding: 2px;
+      .url {
+        width: 100%;
+        // color: var(--color-accent2);
+      }
+    }
+  }
+}
+
 #comment {
   margin-top: 25px;
   padding-left: 12px;
@@ -252,36 +372,43 @@
   .comment-body {
     padding-left: 0.25em;
     // font-size: 1.2rem;
+    margin-bottom: 2.5em;
     .text {
       // font-family: monospace;
     }
-  }
-}
-
-#comment .comment-body:not(:hover) {
-  .write-reply-button {
-    visibility: hidden;
-  }
-}
-#comment .comment-body:hover {
-  .write-reply-button {
-    color: var(--color-accent);
-  }
-}
-
-#reply {
-  .write-reply-button {
-    cursor: pointer;
-    margin: 0;
-    border: 0;
-    padding: 0;
-    color: var(--color-text);
-    &:hover {
-      text-decoration: underline;
+    &:hover,
+    &:focus {
+      .comment-footer {
+        opacity: 1;
+      }
+    }
+    position: relative;
+    .comment-footer {
+      height: 1.25em;
+      bottom: -1.25em;
+      position: absolute;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      opacity: 0;
+      button {
+        color: var(--color-accent);
+      }
+      &:hover {
+        opacity: 1;
+      }
     }
   }
+}
+
+// #comment .comment-body:hover {
+//   .write-reply-button {
+//     color: var(--color-accent);
+//   }
+// }
+
+#reply {
   .write-reply {
-    color: var(--color-accent);
     margin-top: 15px;
     font-family: monospace;
 
@@ -291,7 +418,7 @@
       width: 100%;
       display: flex;
       align-items: flex-end;
-      padding-bottom: 25px;
+      padding-bottom: 0px;
     }
 
     .replies {

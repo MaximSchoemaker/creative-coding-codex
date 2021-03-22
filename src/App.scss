@@ -110,6 +110,36 @@ html {
     }
   }
 
+  input[type="text"] {
+    all: inherit;
+    transition: none;
+    border: 1px solid var(--color-text);
+    border-top: 0;
+    border-left: 0;
+    max-width: 100%;
+    width: 100%;
+    display: inline;
+    min-height: 0;
+    &::placeholder {
+      transition: none !important;
+      color: inherit;
+      opacity: var(--opacity-inactive);
+      // text-decoration-color: gray;
+    }
+  }
+
+  .text-button {
+    height: auto;
+    cursor: pointer;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    color: var(--color-accent);
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   textarea {
     padding: 5px;
     color: var(--color-text);
@@ -164,8 +194,7 @@ html {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .url,
-  .fake-url {
+  .url {
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -178,10 +207,10 @@ html {
     white-space: nowrap;
     display: inline-block;
     vertical-align: bottom;
-    color: var(--color-accent);
+    color: var(--color-accent2);
 
     &:visited {
-      color: var(--color-accent2);
+      color: var(--color-accent);
     }
     &:hover {
       text-decoration: underline;
