@@ -25,6 +25,14 @@ import './App.scss';
 
 const API_BASE_URL = "http://127.0.0.1:3001/"
 
+function Root() {
+	return (
+		<Router>
+			<App />
+		</Router>
+	)
+}
+
 function App() {
 	const storedTheme = localStorage.getItem("theme");
 	const [theme, setTheme] = useState(storedTheme || "light");
@@ -70,36 +78,41 @@ function App() {
 	}, [dispatch]);
 
 	let { width: scrollBarWidth } = useScrollbarSize();
+	let location = useLocation();
+
+	if (location.pathname !== "/")
+		scrollBarWidth = 0;
+	// console.log(location.path, scrollBarWidth);
 
 	return (
-		<div className={`App theme-${theme}`}>
-			<div className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-				{theme === "light" && <span>☀&nbsp;&nbsp;\&nbsp;&nbsp;☾</span>}
-				{theme === "dark" && <span>☼&nbsp;&nbsp;/&nbsp;&nbsp;☪</span>}
-			</div>
+		<div className={`App theme-${theme}`} style={{ "--scrollbar-width": scrollBarWidth + "px" }}>
+			<header className="app-header">
+				<div className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
+					{theme === "light" && <span>☀&nbsp;&nbsp;\&nbsp;&nbsp;☾</span>}
+					{theme === "dark" && <span>☼&nbsp;&nbsp;/&nbsp;&nbsp;☪</span>}
+				</div>
+			</header>
 
-			<Router>
-				<TransitionAnimation>
-					<Route path="/entry/:id">
-						<EntryWrapper theme={theme} />
-					</Route>
-					<Route path="/">
-						<Homepage theme={theme} />
-					</Route>
-				</TransitionAnimation>
-			</Router>
+			<TransitionAnimation>
+				<Route path="/entry/:id">
+					<EntryWrapper theme={theme} />
+				</Route>
+				<Route path="/">
+					<Homepage theme={theme} />
+				</Route>
+			</TransitionAnimation>
 
-			<footer className={`footer ${user !== undefined ? 'visible' : ''}`} style={{ "margin-right": scrollBarWidth }}>
+			<footer className={`app-footer ${user !== undefined ? 'visible' : ''}`}>
 				{user ?
 					<form method="get" action={API_BASE_URL + "logout"}>
-						{user.username}: <button >logout</button>
+						{user.username}: <button>logout</button>
 					</form>
-					: <form method="get" action={API_BASE_URL + "auth/github"}>
-						<button >Sign in with Github <img src={`./icons/GitHub-Mark-${theme === "dark" ? "Light-" : ""}32px.png`} /></button>
+					: <form method="get" action={API_BASE_URL + "auth/github"} >
+						<button >Sign in with Github <img src={`/icons/GitHub-Mark-${theme === "dark" ? "Light-" : ""}32px.png`} /></button>
 					</form>
 				}
 			</footer>
-		</div>
+		</div >
 	);
 }
 
@@ -138,4 +151,4 @@ function EntryWrapper({ theme }) {
 	return null;
 }
 
-export default App;
+export default Root;

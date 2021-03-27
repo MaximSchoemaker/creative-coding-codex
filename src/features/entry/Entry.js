@@ -34,8 +34,8 @@ export function Entry({ entry }) {
   return (
     <div id="entry">
       <div className="header">
-        <Link to="/" className="arrow focus-color"><div>➳</div></Link>
-        <h1>{name}</h1>
+
+        <h1> <Link to="/" className="arrow focus-color"><div>➳</div></Link>{name}</h1>
       </div>
       <div className="body">
         <div className="left">
@@ -47,7 +47,7 @@ export function Entry({ entry }) {
             onClose={() => set_resourcesOpen(false) || set_imagesOpen(true)}
           />
 
-          <ImagesPanel images={images || []}
+          <ImagesPanel entryId={entry._id} images={images || []}
             open={imagesOpen}
             openIcon={imagesOpen && !resourcesOpen}
             onOpen={() => set_imagesOpen(true) || set_resourcesOpen(false)}
@@ -66,11 +66,16 @@ export function Entry({ entry }) {
   );
 }
 
-function Panel({ children, className, title, dir, open, openIcon, onOpen, onClose, passRef }) {
+function Panel({ children, className, title, dir, footer, open, openIcon, onOpen, onClose, passRef }) {
+  const [footerOpen, set_footerOpen] = useState(false);
+
+  if (!open && footerOpen)
+    set_footerOpen(false);
+
   return (
     <div ref={passRef} className={`panel ${className} ${open ? 'open' : ''} ${openIcon ? 'openIcon' : ''}`} onClick={() => !openIcon && onOpen()}>
       <div className={`panel-toggle ${dir} active`} onClick={() => openIcon ? onClose() : onOpen()}>
-        <div ><div className="rot">+</div></div>
+        <div><div className="rot">+</div></div>
       </div>
 
       <div className="panel-scroll">
@@ -79,7 +84,15 @@ function Panel({ children, className, title, dir, open, openIcon, onOpen, onClos
           {children}
         </div>
       </div>
-    </div>
+      { footer &&
+        <div className={`panel-footer ${footerOpen ? 'open' : ''}`}>
+          {footerOpen
+            ? footer
+            : <button className="add-button" onClick={() => set_footerOpen(true)}>add +</button>
+          }
+        </div>
+      }
+    </div >
   );
 }
 
@@ -107,16 +120,18 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
   }
 
   return (
-    <Panel title="Resources" className="resources" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}>
+    <Panel title="Resources" className="resources" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
+      footer={<div className="add-resource">
+        <input type="text" placeholder="descriptor" value={descriptor} onChange={(evt) => set_descriptor(evt.target.value)} />
+        <input type="text" placeholder="url" value={url} onChange={(evt) => set_url(evt.target.value)} />
+        <button disabled={!url || !descriptor} onClick={onSubmit}>submit</button>
+      </div>
+      }
+    >
       <div className="resources-container">
         {resources.map(resource =>
           <Resource resource={resource} />
         )}
-      </div>
-      <div className="add-resource">
-        <input type="text" placeholder="descriptor" value={descriptor} onChange={(evt) => set_descriptor(evt.target.value)} />
-        <input type="text" placeholder="url" value={url} onChange={(evt) => set_url(evt.target.value)} />
-        <button disabled={!url || !descriptor} onClick={onSubmit}>submit</button>
       </div>
     </Panel>
   );
@@ -128,7 +143,9 @@ function Resource({ resource }) {
 
   let { height: titleHeight, ref: titleRef } = useResizeDetector();
   let { height: bodyHeight, ref: bodyRef } = useResizeDetector();
-  const height = (titleHeight || 0) + (bodyHeight || 0) + (bodyHeight ? 10 : 0)
+  const height = window.innerWidth > window.innerHeight
+    ? (titleHeight || 0) + (bodyHeight || 0) + (bodyHeight ? 10 : 0)
+    : null;
 
   return (
     <div id="resource" >
@@ -155,7 +172,7 @@ function Resource({ resource }) {
   );
 }
 
-function ImagesPanel({ images, open, openIcon, onOpen, onClose }) {
+function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
 
 
   let { width, height, ref } = useResizeDetector();
@@ -174,8 +191,17 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose }) {
     columns[0] = [...(columns[0] || []), ...images];
   columns = columns.filter(c => c.length);
 
+  const [file, set_file] = useState(null);
+
   return (
-    <Panel passRef={ref} title="Images" className="images" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose} >
+    <Panel passRef={ref} title="Images" className="images" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
+      footer={
+        <form method="post" encType="multipart/form-data" action={`${API_BASE_URL}upload?_id=${entryId}`}>
+          <input type="file" name="file" value={file} onChange={(evt) => set_file(evt.target.value)} required />
+          <button disabled={!file}>upload</button>
+        </form>
+      }
+    >
       <div className="columns-container">
         {columns.map((col, i) => <div key={i} className="column">
           {col.map(img =>
@@ -272,24 +298,26 @@ function Comment({ onReply, onDelete, comment }) {
 
   return (
     <div id="comment" key={_id}>
-      <div className="comment-header">
-        <span className="date">{date} </span>
-        {/* <Link to={`/user/${by._id}`} className="username">{by.username}: </Link> */}
-        <span className="username">{by.username}: </span>
-      </div>
-      <div className="comment-body">
-        <div className="text">{text}</div>
-        {!writeReply
-          ? <div className="comment-footer">
-            {user && !deleted &&
-              <button className="write-reply-button text-button" onClick={() => set_writeReply(true)}>reply</button>
-            }
-            {byUser &&
-              <button className="text-button" onClick={() => onDelete(_id)}>delete</button>
-            }
-          </div>
-          : <Reply onSubmit={onReply} replyToId={_id} text="reply" onClose={() => set_writeReply(false)} />
-        }
+      <div className="comment-hover">
+        <div className="comment-header">
+          <span className="date">{date} </span>
+          {/* <Link to={`/user/${by._id}`} className="username">{by.username}: </Link> */}
+          <span className="username">{by.username}: </span>
+        </div>
+        <div className="comment-body">
+          <div className="text">{text}</div>
+          {!writeReply
+            ? <div className="comment-footer">
+              {user && !deleted &&
+                <button className="write-reply-button text-button" onClick={() => set_writeReply(true)}>reply</button>
+              }
+              {byUser &&
+                <button className="text-button" onClick={() => onDelete(_id)}>delete</button>
+              }
+            </div>
+            : <Reply onSubmit={onReply} replyToId={_id} text="reply" onClose={() => set_writeReply(false)} />
+          }
+        </div>
       </div>
       <div className="replies">
         {replies.map(rc =>
@@ -306,15 +334,17 @@ function Reply({ onSubmit, text, replyToId, onClose }) {
   return (
     <div id="reply">
       <div className="write-reply">
-        {text}:
+        {/* {text}: */}
         <div className="write-reply-body">
           <textarea value={reply} onChange={(evt) => set_reply(evt.target.value)} />
-          <button className="submit-reply-button" onClick={() =>
-            onSubmit(reply, replyToId, () => {
-              set_reply("");
-              onClose()
-            })
-          }>submit</button>
+          <button className="submit-reply-button"
+            disabled={!reply}
+            onClick={() =>
+              onSubmit(reply, replyToId, () => {
+                set_reply("");
+                onClose()
+              })
+            }>submit</button>
         </div>
       </div>
     </div>

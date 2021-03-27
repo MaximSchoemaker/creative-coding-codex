@@ -19,7 +19,9 @@ export function Homepage({ theme }) {
 	const categories = {};
 
 	const [search, setSearch] = useState("");
-	const [openEntry, setOpenEntry] = useState(null);
+
+	const stored_openEntry = localStorage.getItem("openEntry");
+	const [openEntry, setOpenEntry] = useState(stored_openEntry);
 
 	const storedMode = localStorage.getItem("mode");
 	const [mode, setMode] = useState(storedMode || "text-image");
@@ -28,6 +30,10 @@ export function Homepage({ theme }) {
 		localStorage.setItem("mode", mode);
 	}, [mode]);
 
+
+	useEffect(() => {
+		localStorage.setItem("openEntry", openEntry);
+	}, [openEntry]);
 
 	const entries = useSelector(selectEntries);
 
@@ -43,8 +49,8 @@ export function Homepage({ theme }) {
 		// 	+ (entry.tags || []).reduce((tot, tag) => tot + tag, "")
 		// 	+ (entry.resources || []).reduce((tot, resource) => tot + resource.url + resource.descriptor, "").toLocaleLowerCase()
 		const blob = JSON.stringify(entry).toLocaleLowerCase();
-		console.log(blob);
-		const rank = search.split(" ").reduce((tot, s) => tot + (blob.match(s.toLocaleLowerCase()) ? 1 : 0), 0)
+
+		const rank = search.split(" ").reduce((tot, s) => tot + (blob.match(s.toLocaleLowerCase()) || []).length, 0)
 		const resources = (entry.resources || []).map(l => ({ ...l }));
 		return { ...entry, resources, rank };
 	}).sort((e1, e2) => e2.rank - e1.rank);
@@ -52,7 +58,7 @@ export function Homepage({ theme }) {
 	const filteredData = rankedData.filter((entry) => entry.rank > 0 && (mode !== "image" || entry?.images?.length > 0));
 
 	if (filteredData.length === 1 && openEntry?.id !== filteredData[0].id)
-		setOpenEntry(filteredData[0]);
+		setOpenEntry(filteredData[0]._id);
 
 	filteredData.forEach(entry => {
 		const cat = entry.name[0];
@@ -108,13 +114,13 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 					{mode !== "image" && <h2>{cat}</h2>}
 					<div>
 						{entries.map(entry => {
-							const open = openEntry && entry._id === openEntry._id;
+							const open = entry._id === openEntry;
 							return (
 								<Entry
 									key={entry._id}
 									entry={entry}
 									open={open}
-									onOpen={() => setOpenEntry(entry)}
+									onOpen={() => setOpenEntry(entry._id)}
 									onClose={(evt) => { setOpenEntry(null); evt.stopPropagation(); }}
 									mode={mode}
 									api="update" />
@@ -322,35 +328,36 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 						}
 					</div>
 					<div className="body" ref={ref} >
-						<div className="resources-container">
-							<ul>
-								{(resources || []).map((link, i) =>
-									<li key={i}>
-										{!edit
-											? <Resource link={link} />
-											: <EditResource
-												link={link}
-												onRemove={() => removeLink(link.id)}
-												onChangeDescriptor={(evt) => edit_link_descriptor(link.id, evt.target.value)}
-												onChangeUrl={(evt) => edit_link_url(link.id, evt.target.value)}
-											/>
-										}
-									</li>
-								)}
-							</ul>
-							{/* <div className="trailing"><a className="url">resources: ({(resources || []).length})</a></div> */}
-							<div className="trailing">
-								{!edit
-									? <Link className="url" to={`/entry/${entry._id}?ci=true&cc=true`}>
-										resources: ({(resources || []).length})
+						{entry._id &&
+							<div className="resources-container">
+								<ul>
+									{(resources || []).map((link, i) =>
+										<li className="resource-li" key={i}>
+											{!edit
+												? <Resource link={link} />
+												: <EditResource
+													link={link}
+													onRemove={() => removeLink(link.id)}
+													onChangeDescriptor={(evt) => edit_link_descriptor(link.id, evt.target.value)}
+													onChangeUrl={(evt) => edit_link_url(link.id, evt.target.value)}
+												/>
+											}
+										</li>
+									)}
+								</ul>
+								{/* <div className="trailing"><a className="url">resources: ({(resources || []).length})</a></div> */}
+								<div className="trailing">
+									{!edit
+										? <Link className="url" to={`/entry/${entry._id}?ci=true&cc=true`}>
+											resources: ({(resources || []).length})
 									</Link>
-									: <>
-										<div className="url">	resources: ({(resources || []).length})
+										: <>
+											<div className="url">	resources: ({(resources || []).length})
 									</div> <span className="active-link"><button className="active active-bold" onClick={addLink}><div>+</div></button></span>
-									</>}
+										</>}
+								</div>
 							</div>
-
-						</div>
+						}
 
 						{(hasImages || edit) && entry._id &&
 							<div className="images-container">
@@ -367,12 +374,6 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 								</div>
 								<div className="trailing">
 									<Link className="url" to={`/entry/${entry._id}?cr=true&cc=true`}>images: ({images.length})</Link>
-									{edit &&
-										<form method="post" encType="multipart/form-data" action={`${API_BASE_URL}upload?_id=${entry._id}`}>
-											<input type="file" name="file" required />
-											<button>upload</button>
-										</form>
-									}
 								</div>
 							</div>
 						}

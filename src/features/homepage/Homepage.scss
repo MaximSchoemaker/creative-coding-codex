@@ -24,7 +24,6 @@
   h1 {
     font-style: italic;
     font-size: 8.5vw;
-    margin-top: 0;
     // white-space: nowrap;
     // text-decoration: underline;
 
@@ -80,7 +79,9 @@
   }
 
   .header {
-    padding-left: calc(max(50px, 10vmin));
+    margin-top: 2em;
+
+    padding-left: 10vmin;
 
     .settings-bar {
       margin-top: 25px;
@@ -321,12 +322,17 @@
           width: 100%;
           opacity: 0;
           transition: height 1s, opacity 1s, padding 0.5s, visibility 1s;
+          box-sizing: border-box;
 
+          .resource-li {
+            padding-left: 10px;
+          }
           .link {
             position: relative;
+
             &:not(.edit-link) {
               padding-left: 10px;
-              margin-left: 10px;
+              box-sizing: border-box;
             }
             .active {
               padding-left: 10px;
@@ -359,9 +365,13 @@
             h4 {
               max-width: 100%;
               display: flex;
+              align-items: flex-end;
+              .url {
+                margin-bottom: 0.5px;
+              }
             }
             .url {
-              margin-bottom: 0.5px;
+              // margin-bottom: 0.5px;
               margin-left: 5px;
             }
             .url-input {
@@ -483,6 +493,7 @@
             display: -webkit-box;
             -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
+            margin-bottom: 0.5em;
           }
         }
 
