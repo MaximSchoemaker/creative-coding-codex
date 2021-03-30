@@ -10,7 +10,6 @@ import { setComments, setEntry } from "../homepage/entriesSlice";
 
 
 export function Entry({ entry }) {
-  entry = {};
   const { name, links, images, comments, resources } = entry;
 
   const location = useLocation();
