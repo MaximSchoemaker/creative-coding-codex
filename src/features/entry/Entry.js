@@ -10,6 +10,7 @@ import { setComments, setEntry } from "../homepage/entriesSlice";
 
 
 export function Entry({ entry }) {
+  entry = {};
   const { name, links, images, comments, resources } = entry;
 
   const location = useLocation();
@@ -271,7 +272,7 @@ function CommentsPanel({ comments, entryId, open, openIcon, onOpen, onClose }) {
   return (
     <Panel title="Comments" className="right comments" dir="vertical" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}>
       <div className="comments-container">
-        {user &&
+        {//user &&
           <Reply onSubmit={onReply} text="comment" />
         }
 
