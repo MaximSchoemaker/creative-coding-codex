@@ -9,8 +9,6 @@ import { selectUser } from "../homepage/userSlice";
 import { setComments, setEntry } from "../homepage/entriesSlice";
 
 
-const API_BASE_URL = "http://127.0.0.1:3001/"
-
 export function Entry({ entry }) {
   const { name, links, images, comments, resources } = entry;
 
@@ -105,7 +103,7 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
   const onSubmit = () => {
     const resource = { descriptor, url };
 
-    fetch(`${API_BASE_URL}entries/${entryId}/resource`, { credentials: "include", body: JSON.stringify(resource), method: "POST", headers: { "Content-Type": "application/json" } })
+    fetch(`${process.env.REACT_APP_API_BASE_URL}entries/${entryId}/resource`, { credentials: "include", body: JSON.stringify(resource), method: "POST", headers: { "Content-Type": "application/json" } })
       .then((res) => {
         console.log(res);
         if (res.ok)
@@ -196,7 +194,7 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
   return (
     <Panel passRef={ref} title="Images" className="images" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
       footer={
-        <form method="post" encType="multipart/form-data" action={`${API_BASE_URL}upload?_id=${entryId}`}>
+        <form method="post" encType="multipart/form-data" action={`${process.env.REACT_APP_API_BASE_URL}upload?_id=${entryId}`}>
           <input type="file" name="file" value={file} onChange={(evt) => set_file(evt.target.value)} required />
           <button disabled={!file}>upload</button>
         </form>
@@ -205,7 +203,7 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
       <div className="columns-container">
         {columns.map((col, i) => <div key={i} className="column">
           {col.map(img =>
-            <img src={API_BASE_URL + img.path} style={columns.length == 1 || !open ? { "max-height": height } : { "width": "100%" }} />
+            <img src={process.env.REACT_APP_API_BASE_URL + img.path} style={columns.length == 1 || !open ? { "max-height": height } : { "width": "100%" }} />
           )}
         </div>
         )}
@@ -243,7 +241,7 @@ function CommentsPanel({ comments, entryId, open, openIcon, onOpen, onClose }) {
       }
     }
 
-    fetch(`${API_BASE_URL}entries/${entryId}/comment`, { credentials: "include", body: JSON.stringify(reply), method: "POST", headers: { "Content-Type": "application/json" } })
+    fetch(`${process.env.REACT_APP_API_BASE_URL}entries/${entryId}/comment`, { credentials: "include", body: JSON.stringify(reply), method: "POST", headers: { "Content-Type": "application/json" } })
       .then((res) => {
         console.log(res);
         if (res.ok)
@@ -257,7 +255,7 @@ function CommentsPanel({ comments, entryId, open, openIcon, onOpen, onClose }) {
   }
 
   const onDelete = (commentId) => {
-    fetch(`${API_BASE_URL}entries/${entryId}/comment/${commentId}`, { credentials: "include", method: "DELETE", headers: { "Content-Type": "application/json" } })
+    fetch(`${process.env.REACT_APP_API_BASE_URL}entries/${entryId}/comment/${commentId}`, { credentials: "include", method: "DELETE", headers: { "Content-Type": "application/json" } })
       .then((res) => {
         console.log(res);
         if (res.ok)

@@ -7,9 +7,6 @@ import "./Homepage.scss";
 import { selectUser } from "./userSlice";
 import { selectEntries, setEntries } from "./entriesSlice";
 
-const API_BASE_URL = "http://127.0.0.1:3001/"
-
-
 let ids = 0;
 
 const calcCols = () => Math.ceil(window.innerWidth / 500)
@@ -237,7 +234,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 		// 	return;
 
 		if (removed) {
-			fetch(API_BASE_URL + "entries/remove", { credentials: "include", method: "POST", body: JSON.stringify({ _id: entry._id }), headers: { "Content-Type": "application/json" } })
+			fetch(process.env.REACT_APP_API_BASE_URL + "entries/remove", { credentials: "include", method: "POST", body: JSON.stringify({ _id: entry._id }), headers: { "Content-Type": "application/json" } })
 				.then((res) => {
 					console.log(res);
 					if (res.ok)
@@ -260,7 +257,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 			};
 			console.log("newEntry", newEntry);
 
-			fetch(API_BASE_URL + "entries/" + api, { credentials: "include", method: "POST", body: JSON.stringify(newEntry), headers: { "Content-Type": "application/json" } })
+			fetch(process.env.REACT_APP_API_BASE_URL + "entries/" + api, { credentials: "include", method: "POST", body: JSON.stringify(newEntry), headers: { "Content-Type": "application/json" } })
 				.then((res) => {
 					console.log(res);
 					if (res.ok)
@@ -285,7 +282,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 		setEdit(false);
 	}
 
-	const submitDisabled = !name || resources.some(l => !l.descriptor || !l.url);
+	const submitDisabled = !name; // || resources.some(l => !l.descriptor || !l.url);
 	const nameRef = useRef(null);
 
 	return (
@@ -324,7 +321,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 							}
 						</div>}
 						{hasPreviewImage &&
-							<img alt={name} className="preview-image" src={API_BASE_URL + images[images.length - 1].path} />
+							<img alt={name} className="preview-image" src={process.env.REACT_APP_API_BASE_URL + images[images.length - 1].path} />
 						}
 					</div>
 					<div className="body" ref={ref} >
@@ -365,7 +362,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 								<div className="images">
 									{([...images].reverse().slice(0, 4)).map((img, i) =>
 										<div className="image-container" key={img.id} >
-											<img alt={name} src={API_BASE_URL + img.path} />
+											<img alt={name} src={process.env.REACT_APP_API_BASE_URL + img.path} />
 											{edit &&
 												<div className="active active-bold" onClick={() => removeImage(img.id)}><div>×</div></div>
 											}

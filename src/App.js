@@ -23,11 +23,9 @@ import { selectUser, setUser } from "./features/homepage/userSlice";
 
 import './App.scss';
 
-const API_BASE_URL = "http://127.0.0.1:3001/"
-
 function Root() {
 	return (
-		<Router>
+		<Router basename={process.env.PUBLIC_URL}>
 			<App />
 		</Router>
 	)
@@ -36,6 +34,7 @@ function Root() {
 function App() {
 	const storedTheme = localStorage.getItem("theme");
 	const [theme, setTheme] = useState(storedTheme || "light");
+	console.log(process.env);
 
 	useEffect(() => {
 		localStorage.setItem("theme", theme);
@@ -46,7 +45,7 @@ function App() {
 	const dispatch = useDispatch();
 
 	useEffect(() => {
-		fetch(API_BASE_URL + "entries", { /*credentials: "include"*/ })
+		fetch(process.env.REACT_APP_API_BASE_URL + "entries", { /*credentials: "include"*/ })
 			.then((res) => {
 				console.log(res);
 				if (res.ok)
@@ -59,7 +58,11 @@ function App() {
 				console.error(error);
 			});
 
-		fetch(API_BASE_URL + "user", { credentials: "include" })
+		fetch(process.env.REACT_APP_API_BASE_URL + "user", {
+			credentials: "include", headers: {
+				"SameSite": "None"
+			},
+		})
 			.then((res) => {
 				console.log(res);
 				if (res.ok)
@@ -104,11 +107,11 @@ function App() {
 
 			<footer className={`app-footer ${user !== undefined ? 'visible' : ''}`}>
 				{user ?
-					<form method="get" action={API_BASE_URL + "logout"}>
+					<form method="get" action={process.env.REACT_APP_API_BASE_URL + "logout"}>
 						{user.username}: <button>logout</button>
 					</form>
-					: <form method="get" action={API_BASE_URL + "auth/github"} >
-						<button >Sign in with Github <img src={`/icons/GitHub-Mark-${theme === "dark" ? "Light-" : ""}32px.png`} /></button>
+					: <form method="get" action={process.env.REACT_APP_API_BASE_URL + "auth/github"} >
+						<button >Sign in with Github <img src={`icons/GitHub-Mark-${theme === "dark" ? "Light-" : ""}32px.png`} /></button>
 					</form>
 				}
 			</footer>
