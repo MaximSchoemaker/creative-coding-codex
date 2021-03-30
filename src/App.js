@@ -22,6 +22,7 @@ import { selectEntries, setEntries } from "./features/homepage/entriesSlice";
 import { selectUser, setUser } from "./features/homepage/userSlice";
 
 import './App.scss';
+// process.env.REACT_APP_API_BASE_URL = "";
 
 function Root() {
 	return (
@@ -34,7 +35,7 @@ function Root() {
 function App() {
 	const storedTheme = localStorage.getItem("theme");
 	const [theme, setTheme] = useState(storedTheme || "light");
-	console.log(process.env);
+	// console.log(process.env);
 
 	useEffect(() => {
 		localStorage.setItem("theme", theme);
