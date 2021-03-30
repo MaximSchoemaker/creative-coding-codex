@@ -76,7 +76,7 @@ export function Homepage({ theme }) {
 	return (
 		<div id="homepage" className={`mode-${mode} theme-${theme}`}>
 			<header className="header">
-				<h1>Creative Coding Codex</h1><br />
+				<h1>Creative Coding Codex</h1>
 				<div className="settings-bar">
 					<input className="search-bar focus-color" type="text" placeholder="search..." onChange={(evt) => { setSearch(evt.target.value); setOpenEntry(null) }}></input>
 					<div className="mode-select">
@@ -161,14 +161,15 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 	const [resources, set_resources] = useState(entry.resources?.map((l, i) => ({ ...l, id: ids++ })) || [{ id: ids++, descriptor: "", url: "" }]);
 	const [images, set_images] = useState(entry.images?.map((img, i) => ({ ...img, id: ids++ })) || []);
 	const [comments, set_comments] = useState(entry.comments || []);
-
+	const [neverOpened, set_neverOpened] = useState(true);
 	const [removed, setRemoved] = useState(false);
 
 	let setEdit;
 	([edit, setEdit] = useState(edit));
 
-	useEffect(() => !edit && removed && setRemoved(false), [edit]);
-	useEffect(() => !open && edit && setEdit(false), [open]);
+	useEffect(() => !edit && removed && setRemoved(false), [edit, removed]);
+	useEffect(() => !open && edit && setEdit(false), [open, edit]);
+	useEffect(() => open && set_neverOpened(false), [open]);
 
 	const addLink = () => set_resources([...resources, { id: ids++, url: "", descriptor: "" }]);
 	const removeLink = (id) => set_resources(resources.filter(l => l.id != id));
@@ -285,9 +286,13 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 	const submitDisabled = !name; // || resources.some(l => !l.descriptor || !l.url);
 	const nameRef = useRef(null);
 
+	const startIndex = !edit && hasPreviewImage ? 1 : 0;
+	const endIndex = edit ? images.length : startIndex + 4;
+	const showImages = [...images].reverse().slice(startIndex, endIndex);
+
 	return (
 		<div
-			className={`entry ${open ? 'open' : ''} mode-${mode} ${edit ? 'edit-entry' : ''} ${removed ? "removed" : ''}`}
+			className={`entry ${open ? 'open' : ''} mode-${mode} ${edit ? 'edit-entry' : ''} ${removed ? "removed" : ''} ${hasPreviewImage ? 'has-preview-image' : 'no-preview-image'}`}
 			style={{ height: (open ? openHeight + headerHeight + 30 : headerHeight) || 18 }}
 		>
 			{ !removed ?
@@ -356,11 +361,11 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 							</div>
 						}
 
-						{(hasImages || edit) && entry._id &&
+						{(hasImages || edit) && entry._id && !neverOpened &&
 							<div className="images-container">
 								{/* <h5>images:</h5> */}
 								<div className="images">
-									{([...images].reverse().slice(0, 4)).map((img, i) =>
+									{showImages.map((img, i) =>
 										<div className="image-container" key={img.id} >
 											<img alt={name} src={process.env.REACT_APP_API_BASE_URL + img.path} />
 											{edit &&

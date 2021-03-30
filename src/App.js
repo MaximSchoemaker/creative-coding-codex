@@ -42,6 +42,8 @@ function App() {
 	}, [theme]);
 
 
+	document.body.style.backgroundColor = theme == "light" ? "rgb(203, 231, 230)" : "rgb(7, 0, 14)";
+
 	const user = useSelector(selectUser);
 	const dispatch = useDispatch();
 

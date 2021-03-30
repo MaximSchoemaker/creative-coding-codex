@@ -54,8 +54,7 @@ html {
 
     > div {
       transition: transform 0.1s;
-      user-select: none !important;
-      -webkit-user-select: none;
+      user-select: none;
     }
     &:hover > div {
       transform: scale(1.25);
@@ -82,8 +81,7 @@ html {
   .star,
   .edit,
   img {
-    user-select: none !important;
-    -webkit-user-select: none;
+    user-select: none;
   }
 
   img {
@@ -91,6 +89,8 @@ html {
   }
 
   button {
+    user-select: none;
+
     cursor: pointer;
     background-color: var(--color-bg);
     border: 1px solid var(--color-text);
@@ -251,6 +251,8 @@ html {
     padding-right: 5px;
 
     .theme-toggle {
+      user-select: none;
+
       span {
         border-radius: 50px;
         background-color: var(--color-bg);
@@ -286,6 +288,8 @@ html {
 
     // padding: 5px;
     form {
+      user-select: none;
+
       background-color: var(--color-bg);
       // border-radius: 15px;
       border-top-left-radius: 10px;

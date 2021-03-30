@@ -99,6 +99,7 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
   const [descriptor, set_descriptor] = useState("");
   const [url, set_url] = useState("");
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
 
   const onSubmit = () => {
     const resource = { descriptor, url };
@@ -119,7 +120,7 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
 
   return (
     <Panel title="Resources" className="resources" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
-      footer={<div className="add-resource">
+      footer={user && <div className="add-resource">
         <input type="text" placeholder="descriptor" value={descriptor} onChange={(evt) => set_descriptor(evt.target.value)} />
         <input type="text" placeholder="url" value={url} onChange={(evt) => set_url(evt.target.value)} />
         <button disabled={!url || !descriptor} onClick={onSubmit}>submit</button>
@@ -190,10 +191,11 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
   columns = columns.filter(c => c.length);
 
   const [file, set_file] = useState(null);
+  const user = useSelector(selectUser);
 
   return (
     <Panel passRef={ref} title="Images" className="images" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
-      footer={
+      footer={user &&
         <form method="post" encType="multipart/form-data" action={`${process.env.REACT_APP_API_BASE_URL}upload?_id=${entryId}`}>
           <input type="file" name="file" value={file} onChange={(evt) => set_file(evt.target.value)} required />
           <button disabled={!file}>upload</button>
@@ -271,7 +273,7 @@ function CommentsPanel({ comments, entryId, open, openIcon, onOpen, onClose }) {
   return (
     <Panel title="Comments" className="right comments" dir="vertical" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}>
       <div className="comments-container">
-        {//user &&
+        {user &&
           <Reply onSubmit={onReply} text="comment" />
         }
 
