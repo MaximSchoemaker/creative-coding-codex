@@ -85,7 +85,7 @@ function Panel({ children, className, title, dir, footer, open, openIcon, onOpen
       { footer &&
         <div className={`panel-footer ${footerOpen ? 'open' : ''}`}>
           {footerOpen
-            ? footer
+            ? footer(() => set_footerOpen(false))
             : <button className="add-button" onClick={() => set_footerOpen(true)}>add +</button>
           }
         </div>
@@ -101,7 +101,7 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
-  const onSubmit = () => {
+  const onSubmit = (onSuccess) => {
     const resource = { descriptor, url };
 
     fetch(`${process.env.REACT_APP_API_BASE_URL}entries/${entryId}/resource`, { credentials: "include", body: JSON.stringify(resource), method: "POST", headers: { "Content-Type": "application/json" } })
@@ -112,6 +112,7 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
             dispatch(setEntry(entry));
             set_url("");
             set_descriptor("");
+            onSuccess();
           });
       }).catch((error) => {
         console.error(error);
@@ -120,19 +121,20 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
 
   return (
     <Panel title="Resources" className="resources" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
-      footer={user && <div className="add-resource">
-        <input type="text" placeholder="descriptor" value={descriptor} onChange={(evt) => set_descriptor(evt.target.value)} />
-        <input type="text" placeholder="url" value={url} onChange={(evt) => set_url(evt.target.value)} />
-        <button disabled={!url || !descriptor} onClick={onSubmit}>submit</button>
-      </div>
-      }
+      footer={user && ((onCloseFooter) =>
+        <div className="add-resource">
+          <input type="text" placeholder="descriptor" value={descriptor} onChange={(evt) => set_descriptor(evt.target.value)} />
+          <input type="text" placeholder="url" value={url} onChange={(evt) => set_url(evt.target.value)} />
+          <button disabled={!url || !descriptor} onClick={() => onSubmit(onCloseFooter)}>submit</button>
+        </div>
+      )}
     >
       <div className="resources-container">
         {resources.map(resource =>
           <Resource resource={resource} />
         )}
       </div>
-    </Panel>
+    </Panel >
   );
 }
 
@@ -195,12 +197,12 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
 
   return (
     <Panel passRef={ref} title="Images" className="images" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
-      footer={user &&
-        <form method="post" encType="multipart/form-data" action={`${process.env.REACT_APP_API_BASE_URL}upload?_id=${entryId}`}>
+      footer={user && ((onCloseFooter) =>
+        <form method="post" encType="multipart/form-data" action={`${process.env.REACT_APP_API_BASE_URL}entries/${entryId}/image`}>
           <input type="file" name="file" value={file} onChange={(evt) => set_file(evt.target.value)} required />
           <button disabled={!file}>upload</button>
         </form>
-      }
+      )}
     >
       <div className="columns-container">
         {columns.map((col, i) => <div key={i} className="column">

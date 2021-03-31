@@ -120,7 +120,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 									onOpen={() => setOpenEntry(entry._id)}
 									onClose={(evt) => { setOpenEntry(null); evt.stopPropagation(); }}
 									mode={mode}
-									api="update" />
+									method="PUT" />
 							);
 						})}
 					</div>
@@ -133,7 +133,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 					return (
 						<Entry
 							key={entry.id}
-							api="new"
+							method="POST"
 							entry={entry}
 							mode={mode}
 							edit={true}
@@ -151,7 +151,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 }
 
 
-function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubmitted, onCancel }) {
+function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onSubmitted, onCancel }) {
 	// const { name, resources, images, comments, id } = entry;
 
 	const user = useSelector(selectUser);
@@ -235,7 +235,8 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 		// 	return;
 
 		if (removed) {
-			fetch(process.env.REACT_APP_API_BASE_URL + "entries/remove", { credentials: "include", method: "POST", body: JSON.stringify({ _id: entry._id }), headers: { "Content-Type": "application/json" } })
+			fetch(process.env.REACT_APP_API_BASE_URL + "entries/" + entry._id,
+				{ credentials: "include", method: "DELETE", headers: { "Content-Type": "application/json" } })
 				.then((res) => {
 					console.log(res);
 					if (res.ok)
@@ -258,7 +259,8 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, api, onRemove, onSubm
 			};
 			console.log("newEntry", newEntry);
 
-			fetch(process.env.REACT_APP_API_BASE_URL + "entries/" + api, { credentials: "include", method: "POST", body: JSON.stringify(newEntry), headers: { "Content-Type": "application/json" } })
+			fetch(process.env.REACT_APP_API_BASE_URL + "entries" + (newEntry._id ? ("/" + newEntry._id) : ""),
+				{ credentials: "include", method, body: JSON.stringify(newEntry), headers: { "Content-Type": "application/json" } })
 				.then((res) => {
 					console.log(res);
 					if (res.ok)
