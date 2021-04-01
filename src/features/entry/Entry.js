@@ -3,11 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useResizeDetector } from 'react-resize-detector';
 import { useLocation, useHistory, Link } from "react-router-dom";
 
+import * as imageConversion from 'image-conversion';
 
 import styles from './Entry.scss';
 import { selectUser } from "../homepage/userSlice";
 import { setComments, setEntry } from "../homepage/entriesSlice";
-
 
 export function Entry({ entry }) {
   const { name, links, images, comments, resources } = entry;
@@ -64,7 +64,7 @@ export function Entry({ entry }) {
   );
 }
 
-function Panel({ children, className, title, dir, footer, open, openIcon, onOpen, onClose, passRef }) {
+function Panel({ children, className, footerClassName, title, dir, footer, open, openIcon, onOpen, onClose, passRef }) {
   const [footerOpen, set_footerOpen] = useState(false);
 
   if (!open && footerOpen)
@@ -83,7 +83,7 @@ function Panel({ children, className, title, dir, footer, open, openIcon, onOpen
         </div>
       </div>
       { footer &&
-        <div className={`panel-footer ${footerOpen ? 'open' : ''}`}>
+        <div className={`panel-footer ${footerOpen ? 'open' : ''} ${footerClassName}`}>
           {footerOpen
             ? footer(() => set_footerOpen(false))
             : <button className="add-button" onClick={() => set_footerOpen(true)}>add +</button>
@@ -179,7 +179,7 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
   let { width, height, ref } = useResizeDetector();
   const cols = Math.ceil((width || 0) / 500);
 
-  images = [...images];
+  images = [...images].reverse();
   let columns = [];
   const n = images.length;
   for (let i = 0; i < cols; i++) {
@@ -192,16 +192,65 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
     columns[0] = [...(columns[0] || []), ...images];
   columns = columns.filter(c => c.length);
 
-  const [file, set_file] = useState(null);
   const user = useSelector(selectUser);
+  const [file, set_file] = useState(null);
+  const [compressedImage, set_compressedImage] = useState(null);
+  const [compressing, set_compressing] = useState(false);
+
+  const onChangeFile = (evt) => {
+    const file = evt.target.files[0];
+    set_compressing(true);
+
+    setTimeout(() =>
+      imageConversion.compressAccurately(file, 1000).then(async res => {
+        //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
+        set_file(res)
+        const dataUrl = await imageConversion.filetoDataURL(res);
+        set_compressedImage(dataUrl);
+        set_compressing(false);
+      }), 500);
+  }
+
+  const dispatch = useDispatch();
+  const onSubmitImage = (onSuccess) => {
+    var data = new FormData()
+    data.append('file', file)
+    console.log(data, file);
+
+    fetch(`${process.env.REACT_APP_API_BASE_URL}entries/${entryId}/image`,
+      { credentials: "include", body: data, method: "POST",/* headers: { "Content-Type": "application/json" } */ })
+      .then((res) => {
+        console.log(res);
+        if (res.ok)
+          return res.json().then(entry => {
+            dispatch(setEntry(entry));
+            set_file(null);
+            set_compressedImage(null);
+            onSuccess();
+          });
+      }).catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // const onClickCompressedImage = (evt) => {
+  //   var w = window.open("");
+  //   w.document.write(evt.target.outerHTML);
+  // }
+
+  const showCompressedImage = !compressing && compressedImage
 
   return (
-    <Panel passRef={ref} title="Images" className="images" dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
+    <Panel passRef={ref} title="Images" className="images" footerClassName={`${showCompressedImage ? "compressed-image" : ""}`} dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
       footer={user && ((onCloseFooter) =>
-        <form method="post" encType="multipart/form-data" action={`${process.env.REACT_APP_API_BASE_URL}entries/${entryId}/image`}>
-          <input type="file" name="file" value={file} onChange={(evt) => set_file(evt.target.value)} required />
-          <button disabled={!file}>upload</button>
-        </form>
+        <div className="upload-image">
+          {<div className="compressed-image-container"><img src={compressedImage} /></div>}
+          <div className="inputs">
+            {compressing && <div className="compressing">compressing...</div>}
+            <input type="file" name="file" onChange={onChangeFile} required />
+            <button disabled={!file || compressing} onClick={() => onSubmitImage(onCloseFooter)}>upload</button>
+          </div>
+        </div>
       )}
     >
       <div className="columns-container">
