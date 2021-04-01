@@ -4,6 +4,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import { useLocation, useHistory, Link } from "react-router-dom";
 
 import * as imageConversion from 'image-conversion';
+import Resizer from 'react-image-file-resizer';
 
 import styles from './Entry.scss';
 import { selectUser } from "../homepage/userSlice";
@@ -195,20 +196,43 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
   const user = useSelector(selectUser);
   const [file, set_file] = useState(null);
   const [compressedImage, set_compressedImage] = useState(null);
-  const [compressing, set_compressing] = useState(false);
+  const [compressingState, set_compressingState] = useState(null);
+
+  const resizeFile = (file) => new Promise(resolve => {
+    Resizer.imageFileResizer(file, 1080, 1080, 'JPEG', 100, 0,
+      uri => {
+        resolve(uri);
+      },
+      'blob'
+    );
+  });
 
   const onChangeFile = (evt) => {
-    const file = evt.target.files[0];
-    set_compressing(true);
+    let file = evt.target.files[0];
 
-    setTimeout(() =>
-      imageConversion.compressAccurately(file, 1000).then(async res => {
-        //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
-        set_file(res)
-        const dataUrl = await imageConversion.filetoDataURL(res);
-        set_compressedImage(dataUrl);
-        set_compressing(false);
-      }), 500);
+    if (file.type == "image/gif" && file.size > 1100000) {
+      alert("gif is too big! file limit: 1mb");
+      evt.target.value = null;
+      return;
+    }
+
+    if (file.tyle != "image/gif")
+      set_compressingState("resizing");
+
+    setTimeout(async () => {
+      console.log(file);
+      if (file.type != "image/gif") {
+        set_compressingState("resizing");
+        file = await resizeFile(file);
+        set_compressingState("compressing");
+        file = await imageConversion.compressAccurately(file, 1000);
+      }
+
+      set_file(file)
+      const dataUrl = await imageConversion.filetoDataURL(file);
+      set_compressedImage(dataUrl);
+      set_compressingState(null);
+    }, compressedImage ? 500 : 0);
   }
 
   const dispatch = useDispatch();
@@ -238,7 +262,7 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
   //   w.document.write(evt.target.outerHTML);
   // }
 
-  const showCompressedImage = !compressing && compressedImage
+  const showCompressedImage = !compressingState && compressedImage
 
   return (
     <Panel passRef={ref} title="Images" className="images" footerClassName={`${showCompressedImage ? "compressed-image" : ""}`} dir="horizontal" open={open} openIcon={openIcon} onOpen={onOpen} onClose={onClose}
@@ -246,9 +270,9 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
         <div className="upload-image">
           {<div className="compressed-image-container"><img src={compressedImage} /></div>}
           <div className="inputs">
-            {compressing && <div className="compressing">compressing...</div>}
+            {compressingState && <div className="compressing">{compressingState}...</div>}
             <input type="file" name="file" onChange={onChangeFile} required />
-            <button disabled={!file || compressing} onClick={() => onSubmitImage(onCloseFooter)}>upload</button>
+            <button disabled={!file || compressingState} onClick={() => onSubmitImage(onCloseFooter)}>upload</button>
           </div>
         </div>
       )}
