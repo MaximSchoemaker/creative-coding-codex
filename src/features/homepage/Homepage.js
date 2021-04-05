@@ -421,7 +421,7 @@ function Resource({ link: { descriptor, url, favicons } }) {
 			<h4>
 				{descriptor}:
 			</h4>
-			<a href={url} target="_blank" rel="noreferrer noopener" className="url">{favSrc
+			<a href={url} target="_blank" rel="noreferrer noopener" className="url">url{favSrc
 				? <div className="url-icon"><img src={favSrc} /></div>
 				: "🔗"}
 			</a>

@@ -196,7 +196,7 @@ function Resource({ resource }) {
         <div className="resource-footer">
           <a href={url} target="_blank" className="url" href={url}>
             <>{favSrc
-              ? <div className="icon"><img src={favSrc} /> </div>
+              ? <div className="url-icon"><img src={favSrc} /> </div>
               : <span className="char">🔗</span>}
             </>
             {url}

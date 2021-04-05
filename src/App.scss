@@ -233,8 +233,15 @@ html {
 
     white-space: nowrap;
     vertical-align: bottom;
-    margin-bottom: 1px;
+    // margin-bottom: 1px;
+    margin: 2px;
 
+    img {
+      max-width: 1em;
+      max-height: 1em;
+      min-width: 0;
+      min-height: 0;
+    }
     &:hover {
       // text-decoration: underline;
       border-bottom: 1px solid var(--color-accent);
