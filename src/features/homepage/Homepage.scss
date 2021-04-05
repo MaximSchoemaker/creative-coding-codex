@@ -305,7 +305,8 @@
           }
 
           .preview-image {
-            opacity: calc(var(--opacity-inactive) * 1.5);
+            opacity: var(--opacity-inactive);
+            // opacity: calc(var(--opacity-inactive) * 1.5);
 
             margin-top: 8px;
             width: calc(100% - 30px);
