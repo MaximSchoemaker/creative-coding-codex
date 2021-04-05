@@ -15,7 +15,7 @@
     font-style: italic;
     // font-size: calc(min(7vh, 15vw));
     margin-top: 0;
-    white-space: nowrap;
+    // white-space: nowrap;
     // text-decoration: underline;
 
     text-shadow: -2px 0px var(--color-bg), 2px 0px var(--color-bg), 0px -2px var(--color-bg), 0px 2px var(--color-bg),
@@ -47,13 +47,14 @@
   }
 
   .header {
+    margin-left: calc(max(1em, 5vw));
     h1 {
-      margin-left: calc(max(1em, 5vw));
       position: relative;
       font-size: inherit;
     }
     margin-top: 0.25em;
     margin-bottom: 0.1em;
+    margin-right: 55px;
 
     .arrow {
       text-decoration: none;
@@ -507,7 +508,12 @@
       border-top: 1px solid var(--color-accent);
       padding: 2px;
       .url {
-        width: 100%;
+        max-width: 100%;
+
+        .url-icon {
+          margin-right: 3px;
+          margin-left: 1px;
+        }
       }
     }
   }

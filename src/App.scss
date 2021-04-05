@@ -242,16 +242,16 @@ html {
       min-width: 0;
       min-height: 0;
     }
-    &:hover {
-      // text-decoration: underline;
-      border-bottom: 1px solid var(--color-accent);
-      // padding-bottom: -1;
-      margin-bottom: 0px;
-    }
-    &:visited {
-      color: var(--color-accent);
-      border-color: var(--color-accent2);
-    }
+    // &:hover {
+    //   // text-decoration: underline;
+    //   border-bottom: 1px solid var(--color-accent);
+    //   // padding-bottom: -1;
+    //   margin-bottom: 0px;
+    // }
+    // &:visited {
+    //   color: var(--color-accent);
+    //   border-color: var(--color-accent2);
+    // }
   }
 
   .username {

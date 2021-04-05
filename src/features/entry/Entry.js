@@ -41,7 +41,7 @@ export function Entry({ entry }) {
     <div id="entry" className={`${resourcesOpen ? "resourcesOpen" : ""} ${imagesOpen ? "imagesOpen" : ""} ${commentsOpen ? "commentsOpen" : ""}`}>
       <div className="header" style={{ "font-size": `calc(min(${fontSize}vw, 8vh)` }}>
 
-        <h1> <Link to="/" className="arrow focus-color" > <div>➳</div></Link>{name}</h1>
+        <h1><Link to="/" className="arrow focus-color" > <div>➳</div></Link>{name}</h1>
       </div>
       <div className="body">
         <div className="left">
