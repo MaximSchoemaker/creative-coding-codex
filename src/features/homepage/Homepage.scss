@@ -298,6 +298,10 @@
 
           .title-container {
             transition: height 0.15s;
+
+            .name button {
+              text-align: left;
+            }
           }
 
           .preview-image {
@@ -362,10 +366,10 @@
             background-color: var(--color-bg);
             // }
 
-            white-space: nowrap;
+            // white-space: nowrap;
             background-color: var(--color-bg);
-            display: inline-flex;
-            align-items: flex-end;
+            // display: inline-flex;
+            // align-items: flex-end;
 
             input[placeholder="descriptor"] {
               max-width: 100px;
@@ -373,15 +377,21 @@
 
             h4 {
               max-width: 100%;
-              display: flex;
-              align-items: flex-end;
-              .url {
-                margin-bottom: 0.5px;
-              }
+              display: inline;
+              // display: flex;
+              // align-items: flex-end;
+              // .url {
+              //   margin-bottom: 0.5px;
+              // }
+              margin-right: 5px;
             }
-            .url {
+            .url-icon {
               // margin-bottom: 0.5px;
-              margin-left: 5px;
+              height: 1em;
+              // vertical-align: top;
+            }
+            .char {
+              text-decoration: none;
             }
             .url-input {
               flex: 1;

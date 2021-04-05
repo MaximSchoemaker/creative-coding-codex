@@ -13,9 +13,9 @@
   h1 {
     // text-transform: capitalize;
     font-style: italic;
-    font-size: calc(min(7vh, 15vw));
+    // font-size: calc(min(7vh, 15vw));
     margin-top: 0;
-    // white-space: nowrap;
+    white-space: nowrap;
     // text-decoration: underline;
 
     text-shadow: -2px 0px var(--color-bg), 2px 0px var(--color-bg), 0px -2px var(--color-bg), 0px 2px var(--color-bg),
@@ -50,10 +50,11 @@
     h1 {
       margin-left: calc(max(1em, 5vw));
       position: relative;
+      font-size: inherit;
     }
+    margin-top: 0.25em;
+    margin-bottom: 0.1em;
 
-    margin-top: 1em;
-    margin-bottom: 1em;
     .arrow {
       text-decoration: none;
       color: var(--color-text);
@@ -88,7 +89,7 @@
       min-width: 0;
       // min-height: 0;
 
-      transition: 0.333s;
+      transition: 0.333s flex;
 
       overflow: hidden;
       position: relative;
@@ -273,13 +274,14 @@
     }
 
     .left {
-      min-width: 0;
-      min-height: 0;
+      min-width: 200px;
+      min-height: 60px;
       // max-width: 33vw;
       flex: 1.5;
       @media screen and (max-device-aspect-ratio: 1/1) {
-        flex: 1;
+        flex: 2;
       }
+      transition: flex 0.333s;
 
       display: flex;
       flex-direction: column;
@@ -312,7 +314,7 @@
             display: flex;
             gap: 15px;
             input[placeholder="descriptor"] {
-              max-width: 100px;
+              // max-width: 100px;
             }
           }
         }
@@ -409,6 +411,12 @@
       display: flex;
     }
   }
+
+  &:not(.resourcesOpen):not(.imagesOpen) {
+    .left {
+      flex: 0;
+    }
+  }
 }
 
 #resource {
@@ -427,7 +435,7 @@
   }
 
   @media screen and (max-device-aspect-ratio: 1/1) {
-    margin: 2em 0 1em 0;
+    margin: 2em 2em 1em 0;
     margin-top: 3em;
   }
 
@@ -500,7 +508,15 @@
       padding: 2px;
       .url {
         width: 100%;
-        // color: var(--color-accent2);
+
+        .icon {
+          display: inline-flex;
+          height: 1em;
+          vertical-align: bottom;
+
+          margin: 1px;
+          margin-right: 2px;
+        }
       }
     }
   }
@@ -610,6 +626,10 @@
       display: flex;
       align-items: flex-end;
       padding-bottom: 0px;
+
+      button {
+        margin-right: -15px;
+      }
     }
 
     .replies {

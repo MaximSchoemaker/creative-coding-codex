@@ -224,6 +224,28 @@ html {
       text-decoration: underline;
     }
   }
+  .url-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+    vertical-align: bottom;
+    margin-bottom: 1px;
+
+    &:hover {
+      // text-decoration: underline;
+      border-bottom: 1px solid var(--color-accent);
+      // padding-bottom: -1;
+      margin-bottom: 0px;
+    }
+    &:visited {
+      color: var(--color-accent);
+      border-color: var(--color-accent2);
+    }
+  }
 
   .username {
     color: var(--color-accent);

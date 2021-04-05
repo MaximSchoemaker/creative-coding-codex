@@ -27,7 +27,6 @@ export function Homepage({ theme }) {
 		localStorage.setItem("mode", mode);
 	}, [mode]);
 
-
 	useEffect(() => {
 		localStorage.setItem("openEntry", openEntry);
 	}, [openEntry]);
@@ -413,14 +412,19 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 }
 
 
-function Resource({ link: { descriptor, url } }) {
+function Resource({ link: { descriptor, url, favicons } }) {
+	const favSrc = favicons?.icons[0]?.src;
+
 	return (
 		<div className="link">
 			<button className="star active-bold focus-color"><div>✧</div></button>
 			<h4>
 				{descriptor}:
-				<a href={url} target="_blank" rel="noreferrer noopener" className="url">{url}</a>
 			</h4>
+			<a href={url} target="_blank" rel="noreferrer noopener" className="url">{favSrc
+				? <div className="url-icon"><img src={favSrc} /></div>
+				: "🔗"}
+			</a>
 		</div>
 	);
 }

@@ -10,6 +10,10 @@ import styles from './Entry.scss';
 import { selectUser } from "../homepage/userSlice";
 import { setComments, setEntry } from "../homepage/entriesSlice";
 
+function isLandscape() {
+  return window.innerWidth > window.innerHeight
+}
+
 export function Entry({ entry }) {
   const { name, links, images, comments, resources } = entry;
 
@@ -30,34 +34,55 @@ export function Entry({ entry }) {
     window.history.replaceState(null, "", url.toString());
   }, [resourcesOpen, imagesOpen, commentsOpen]);
 
-  return (
-    <div id="entry">
-      <div className="header">
+  const landscape = isLandscape();
+  const fontSize = Math.min(10, 200 / name.length);
 
-        <h1> <Link to="/" className="arrow focus-color"><div>➳</div></Link>{name}</h1>
+  return (
+    <div id="entry" className={`${resourcesOpen ? "resourcesOpen" : ""} ${imagesOpen ? "imagesOpen" : ""} ${commentsOpen ? "commentsOpen" : ""}`}>
+      <div className="header" style={{ "font-size": `calc(min(${fontSize}vw, 8vh)` }}>
+
+        <h1> <Link to="/" className="arrow focus-color" > <div>➳</div></Link>{name}</h1>
       </div>
       <div className="body">
         <div className="left">
 
           <ResourcesPanel entryId={entry._id} resources={resources || []}
             open={resourcesOpen}
-            openIcon={resourcesOpen && !imagesOpen}
-            onOpen={() => set_resourcesOpen(true) || set_imagesOpen(false)}
-            onClose={() => set_resourcesOpen(false) || set_imagesOpen(true)}
+            openIcon={landscape
+              ? resourcesOpen && !imagesOpen
+              : resourcesOpen && !imagesOpen && !commentsOpen
+            }
+            onOpen={() => landscape
+              ? set_resourcesOpen(true) || set_imagesOpen(false)
+              : set_resourcesOpen(true) || set_imagesOpen(false) || set_commentsOpen(false)
+            }
+            onClose={() => set_resourcesOpen(false)}
           />
 
           <ImagesPanel entryId={entry._id} images={images || []}
             open={imagesOpen}
-            openIcon={imagesOpen && !resourcesOpen}
-            onOpen={() => set_imagesOpen(true) || set_resourcesOpen(false)}
-            onClose={() => set_imagesOpen(false) || set_resourcesOpen(true)}
+            openIcon={landscape
+              ? imagesOpen && !resourcesOpen
+              : imagesOpen && !resourcesOpen && !commentsOpen
+            }
+            onOpen={() => landscape
+              ? set_imagesOpen(true) || set_resourcesOpen(false)
+              : set_imagesOpen(true) || set_resourcesOpen(false) || set_commentsOpen(false)
+            }
+            onClose={() => set_imagesOpen(false)}
           />
         </div>
 
         <CommentsPanel entryId={entry._id} comments={comments || []}
           open={commentsOpen}
-          openIcon={commentsOpen}
-          onOpen={() => set_commentsOpen(true)}
+          openIcon={landscape
+            ? commentsOpen
+            : commentsOpen && !imagesOpen && !resourcesOpen
+          }
+          onOpen={() => landscape
+            ? set_commentsOpen(true)
+            : set_commentsOpen(true) || set_imagesOpen(false) || set_resourcesOpen(false)
+          }
           onClose={() => set_commentsOpen(false)}
         />
       </div>
@@ -140,14 +165,16 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
 }
 
 function Resource({ resource }) {
-  const { _id, descriptor, url, metadata } = resource;
+  const { _id, descriptor, url, metadata, favicons } = resource;
   const starred = false;
 
   let { height: titleHeight, ref: titleRef } = useResizeDetector();
   let { height: bodyHeight, ref: bodyRef } = useResizeDetector();
-  const height = window.innerWidth > window.innerHeight
+  const height = isLandscape()
     ? (titleHeight || 0) + (bodyHeight || 0) + (bodyHeight ? 10 : 0)
     : null;
+
+  const favSrc = favicons?.icons[0]?.src;
 
   return (
     <div id="resource" >
@@ -167,7 +194,13 @@ function Resource({ resource }) {
           </div>
         </div>
         <div className="resource-footer">
-          <a href={url} target="_blank" className="url" href={url}>{url}</a>
+          <a href={url} target="_blank" className="url" href={url}>
+            <>{favSrc
+              ? <div className="icon"><img src={favSrc} /> </div>
+              : <span className="char">🔗</span>}
+            </>
+            {url}
+          </a>
         </div>
       </div >
     </ div>
@@ -271,7 +304,7 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
           {<div className="compressed-image-container"><img src={compressedImage} /></div>}
           <div className="inputs">
             {compressingState && <div className="compressing">{compressingState}...</div>}
-            <input type="file" name="file" onChange={onChangeFile} required />
+            <input type="file" name="file" onChange={onChangeFile} accept="image/x-png,image/gif,image/jpeg" required />
             <button disabled={!file || compressingState} onClick={() => onSubmitImage(onCloseFooter)}>upload</button>
           </div>
         </div>
