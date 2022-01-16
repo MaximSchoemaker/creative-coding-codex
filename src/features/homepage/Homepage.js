@@ -86,7 +86,7 @@ export function Homepage({ theme }) {
 				</div>
 
 			</header>
-			<div className="entries">
+			<div className="entries" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0px, 1fr)` }} >
 				{columns.map((column, i) =>
 					<Column key={i} column={column} openEntry={openEntry} setOpenEntry={setOpenEntry} cols={columns.length} mode={mode} last={i == columns.length - 1} />
 				)}
@@ -104,7 +104,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 	const user = useSelector(selectUser);
 
 	return (
-		<div className="column" style={{ width: (100 / cols) + "%" }}>
+		<div className="column">
 			{column.map(([cat, entries]) =>
 				<div key={cat} className="category">
 					{mode !== "image" && <h2>{cat}</h2>}
