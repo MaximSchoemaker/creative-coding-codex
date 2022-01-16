@@ -55,7 +55,7 @@
       .name {
         line-height: 0.8em;
         display: block;
-        margin: 0.25em 0;
+        margin: 0.333em 0;
       }
     }
     margin-top: 0.25em;
@@ -67,7 +67,7 @@
       color: var(--color-text);
       position: absolute;
       left: -1.1em;
-      top: 0.3em;
+      top: 0.4em;
       font-size: 0.7em;
     }
   }
@@ -442,7 +442,7 @@
   }
 
   @media screen and (max-device-aspect-ratio: 1/1) {
-    margin: 2em 2em 1em 0;
+    margin: 2em 0 1em 0;
     margin-top: 3em;
   }
 
@@ -469,8 +469,6 @@
       // max-height: 8em;
       // width: 100%;
       padding: 5px;
-      display: flex;
-
       display: flex;
       gap: 10px;
 
