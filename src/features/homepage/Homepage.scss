@@ -25,7 +25,7 @@
     user-select: none;
 
     font-style: italic;
-    font-size: 8vw;
+    font-size: max(50px, 8vw);
     // white-space: nowrap;
     // text-decoration: underline;
 
@@ -83,7 +83,7 @@
   .header {
     margin-top: 2em;
 
-    padding-left: 10vmin;
+    padding: 0 max(60px, 10vmin);
 
     .settings-bar {
       margin-top: 25px;
