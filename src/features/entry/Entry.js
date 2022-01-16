@@ -39,50 +39,32 @@ export function Entry({ entry }) {
 
   return (
     <div id="entry" className={`${resourcesOpen ? "resourcesOpen" : ""} ${imagesOpen ? "imagesOpen" : ""} ${commentsOpen ? "commentsOpen" : ""}`}>
-      <div className="header" style={{ "font-size": `calc(min(${fontSize}vw, 8vh)` }}>
+      <div className="header" style={{ fontSize: `calc(max(35px, min(${fontSize}vw, 8vh))` }}>
 
-        <h1><Link to="/" className="arrow focus-color" > <div>➳</div></Link>{name}</h1>
+        <h1><Link to="/" className="arrow focus-color" > <div>➳</div></Link><span className="name">{name}</span></h1>
       </div>
       <div className="body">
         <div className="left">
 
           <ResourcesPanel entryId={entry._id} resources={resources || []}
             open={resourcesOpen}
-            openIcon={landscape
-              ? resourcesOpen && !imagesOpen
-              : resourcesOpen && !imagesOpen && !commentsOpen
-            }
-            onOpen={() => landscape
-              ? set_resourcesOpen(true) || set_imagesOpen(false)
-              : set_resourcesOpen(true) || set_imagesOpen(false) || set_commentsOpen(false)
-            }
+            openIcon={resourcesOpen && !imagesOpen}
+            onOpen={() => (set_resourcesOpen(true), set_imagesOpen(false))}
             onClose={() => set_resourcesOpen(false)}
           />
 
           <ImagesPanel entryId={entry._id} images={images || []}
             open={imagesOpen}
-            openIcon={landscape
-              ? imagesOpen && !resourcesOpen
-              : imagesOpen && !resourcesOpen && !commentsOpen
-            }
-            onOpen={() => landscape
-              ? set_imagesOpen(true) || set_resourcesOpen(false)
-              : set_imagesOpen(true) || set_resourcesOpen(false) || set_commentsOpen(false)
-            }
+            openIcon={imagesOpen && !resourcesOpen}
+            onOpen={() => (set_imagesOpen(true), set_resourcesOpen(false))}
             onClose={() => set_imagesOpen(false)}
           />
         </div>
 
         <CommentsPanel entryId={entry._id} comments={comments || []}
           open={commentsOpen}
-          openIcon={landscape
-            ? commentsOpen
-            : commentsOpen && !imagesOpen && !resourcesOpen
-          }
-          onOpen={() => landscape
-            ? set_commentsOpen(true)
-            : set_commentsOpen(true) || set_imagesOpen(false) || set_resourcesOpen(false)
-          }
+          openIcon={commentsOpen}
+          onOpen={() => set_commentsOpen(true)}
           onClose={() => set_commentsOpen(false)}
         />
       </div>
@@ -108,7 +90,7 @@ function Panel({ children, className, footerClassName, title, dir, footer, open,
           {children}
         </div>
       </div>
-      { footer &&
+      {footer &&
         <div className={`panel-footer ${footerOpen ? 'open' : ''} ${footerClassName}`}>
           {footerOpen
             ? footer(() => set_footerOpen(false))
@@ -157,7 +139,7 @@ function ResourcesPanel({ resources, open, openIcon, onOpen, onClose, entryId })
     >
       <div className="resources-container">
         {resources.map(resource =>
-          <Resource resource={resource} />
+          <Resource resource={resource} key={resource._id} />
         )}
       </div>
     </Panel >
@@ -313,7 +295,7 @@ function ImagesPanel({ images, open, openIcon, onOpen, onClose, entryId }) {
       <div className="columns-container">
         {columns.map((col, i) => <div key={i} className="column">
           {col.map(img =>
-            <img src={process.env.REACT_APP_API_BASE_URL + img.path} style={columns.length == 1 || !open ? { "max-height": height } : { "width": "100%" }} />
+            <img key={img._id} src={process.env.REACT_APP_API_BASE_URL + img.path} style={columns.length == 1 || !open ? { maxHeight: height } : { "width": "100%" }} />
           )}
         </div>
         )}
@@ -386,7 +368,7 @@ function CommentsPanel({ comments, entryId, open, openIcon, onOpen, onClose }) {
         }
 
         {comments.map(comment =>
-          <Comment onReply={onReply} onDelete={onDelete} comment={comment} />
+          <Comment key={comment._id} onReply={onReply} onDelete={onDelete} comment={comment} />
         )}
       </div>
     </Panel>

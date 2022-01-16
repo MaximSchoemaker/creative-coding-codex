@@ -296,9 +296,9 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 			className={`entry ${open ? 'open' : ''} mode-${mode} ${edit ? 'edit-entry' : ''} ${removed ? "removed" : ''} ${hasPreviewImage ? 'has-preview-image' : 'no-preview-image'}`}
 			style={{ height: (open ? openHeight + headerHeight + 30 : headerHeight) || 18 }}
 		>
-			{ !removed ?
+			{!removed ?
 				<div style={{ width: "100%" }}>
-					<div className="entry-header" ref={headerRef} onClick={onOpen} tabIndex={mode == "image" && !open && 0} onKeyDown={(evt) => {
+					<div className="entry-header" ref={headerRef} onClick={onOpen} tabIndex={mode == "image" && !open ? 0 : -1} onKeyDown={(evt) => {
 						if (evt.key == "Enter" && document.activeElement === evt.target && onOpen)
 							onOpen();
 					}}>
@@ -353,10 +353,10 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 									{!edit
 										? <Link className="url" to={`/entry/${entry._id}?ci=true&cc=true`}>
 											resources: ({(resources || []).length})
-									</Link>
+										</Link>
 										: <>
 											<div className="url">	resources: ({(resources || []).length})
-									</div> <span className="active-link"><button className="active active-bold" onClick={addLink}><div>+</div></button></span>
+											</div> <span className="active-link"><button className="active active-bold" onClick={addLink}><div>+</div></button></span>
 										</>}
 								</div>
 							</div>
