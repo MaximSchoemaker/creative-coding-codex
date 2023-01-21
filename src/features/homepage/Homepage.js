@@ -155,7 +155,6 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 
 	const user = useSelector(selectUser);
 
-	const [id, set_id] = useState(entry.id);
 	const [name, set_name] = useState(entry.name || "");
 	const [resources, set_resources] = useState(entry.resources?.map((l, i) => ({ ...l, id: ids++ })) || [{ id: ids++, descriptor: "", url: "" }]);
 	const [images, set_images] = useState(entry.images?.map((img, i) => ({ ...img, id: ids++ })) || []);
@@ -208,19 +207,20 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 
 	useEffect(() => {
 		const starredEntries = getStoredStarredEntries();
-		if (starredEntries.includes(id))
+		if (starredEntries.includes(entry._id))
 			setStarred(true);
-	}, [id]);
+	}, [entry._id]);
 
 	const onStar = () => {
 		let starredEntries = getStoredStarredEntries();
 		if (starred) {
-			starredEntries = starredEntries.filter(e => e !== id);
+			starredEntries = starredEntries.filter(e => e !== entry._id);
 			setStarred(false);
 		} else {
-			starredEntries.push(id);
+			starredEntries.push(entry._id);
 			setStarred(true);
 		}
+		// console.log({ entry, entry._id, starredEntries });
 		localStorage.setItem("starredEntries", JSON.stringify(starredEntries));
 	}
 
