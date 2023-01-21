@@ -50,14 +50,14 @@ export function Entry({ entry }) {
             open={resourcesOpen}
             openIcon={resourcesOpen && !imagesOpen}
             onOpen={() => (set_resourcesOpen(true), set_imagesOpen(false))}
-            onClose={() => set_resourcesOpen(false)}
+            onClose={() => (set_resourcesOpen(false), set_imagesOpen(true))}
           />
 
           <ImagesPanel entryId={entry._id} images={images || []}
             open={imagesOpen}
             openIcon={imagesOpen && !resourcesOpen}
             onOpen={() => (set_imagesOpen(true), set_resourcesOpen(false))}
-            onClose={() => set_imagesOpen(false)}
+            onClose={() => (set_imagesOpen(false), set_resourcesOpen(true))}
           />
         </div>
 
