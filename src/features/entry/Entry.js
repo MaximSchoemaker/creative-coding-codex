@@ -26,12 +26,12 @@ export function Entry({ entry }) {
 
   useEffect(() => {
     const url = new URL(window.document.URL);
-    for (var [key] of url.searchParams.entries())
-      url.searchParams.delete(key);
-    if (!resourcesOpen) url.searchParams.set("cr", true);
-    if (!imagesOpen) url.searchParams.set("ci", true);
-    if (!commentsOpen) url.searchParams.set("cc", true);
-    window.history.replaceState(null, "", url.toString());
+
+    !resourcesOpen ? url.searchParams.set("cr", "true") : url.searchParams.delete("cr");
+    !imagesOpen ? url.searchParams.set("ci", "true") : url.searchParams.delete("ci");
+    !commentsOpen ? url.searchParams.set("cc", "true") : url.searchParams.delete("cc");
+
+    window.history.replaceState(null, "", url);
   }, [resourcesOpen, imagesOpen, commentsOpen]);
 
   const landscape = isLandscape();
