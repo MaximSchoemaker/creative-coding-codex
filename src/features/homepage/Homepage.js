@@ -393,12 +393,14 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 								{/* <h5>images:</h5> */}
 								<div className="images">
 									{showImages.map((img, i) =>
-										<Link className="image-container image-link" key={img.id} to={`/entry/${entry._id}?cr=true&cc=true`} tabIndex={open ? 0 : -1}>
-											<img alt={name} src={BASE_URL + img.path} />
+										<>
+											<Link className="image-container image-link" key={img.id} to={`/entry/${entry._id}?cr=true&cc=true`} tabIndex={open ? 0 : -1}>
+												<img alt={name} src={BASE_URL + img.path} />
+											</Link>
 											{edit &&
 												<div className="active active-bold" onClick={() => removeImage(img.id)}><div>×</div></div>
 											}
-										</Link>
+										</>
 									)}
 								</div>
 								<div className="trailing">
