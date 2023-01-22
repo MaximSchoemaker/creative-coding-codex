@@ -90,7 +90,7 @@ export function Homepage({ theme }) {
 			</header>
 			<div className="entries" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0px, 1fr)` }} >
 				{columns.map((column, i) =>
-					<Column key={i} column={column} openEntry={openEntry} setOpenEntry={setOpenEntry} cols={columns.length} mode={mode} last={i == columns.length - 1} />
+					<Column key={i} column={column} openEntry={openEntry} setOpenEntry={setOpenEntry} cols={columns.length} mode={mode} last={i === columns.length - 1} />
 				)}
 			</div>
 
@@ -102,7 +102,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 
 	const [entries, set_entries] = useState([]);
 	const addEntry = () => set_entries([{ id: ids++ }, ...entries]);
-	const removeEntry = (id) => set_entries(entries.filter(e => e.id != id));
+	const removeEntry = (id) => set_entries(entries.filter(e => e.id !== id));
 	const user = useSelector(selectUser);
 
 	return (
@@ -130,7 +130,7 @@ function Column({ column, openEntry, setOpenEntry, cols, mode, last }) {
 			{last && user?.admin && <div className="category">
 				<h2><button className="active" onClick={addEntry}><div>+</div></button></h2>
 				{entries.map(entry => {
-					const open = openEntry && entry._id === openEntry._id;
+					// const open = openEntry && entry._id === openEntry._id;
 					return (
 						<Entry
 							key={entry.id}
@@ -160,7 +160,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 	const [name, set_name] = useState(entry.name || "");
 	const [resources, set_resources] = useState(entry.resources?.map((l, i) => ({ ...l, id: ids++ })) || [{ id: ids++, descriptor: "", url: "" }]);
 	const [images, set_images] = useState(entry.images?.map((img, i) => ({ ...img, id: ids++ })) || []);
-	const [comments, set_comments] = useState(entry.comments || []);
+	const [comments] = useState(entry.comments || []);
 	const [neverOpened, set_neverOpened] = useState(true);
 	const [removed, setRemoved] = useState(false);
 
@@ -168,15 +168,15 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 	([edit, setEdit] = useState(edit));
 
 	useEffect(() => !edit && removed && setRemoved(false), [edit, removed]);
-	useEffect(() => !open && edit && setEdit(false), [open, edit]);
+	useEffect(() => !open && edit && setEdit(false), [open, edit, setEdit]);
 	useEffect(() => open && set_neverOpened(false), [open]);
 
 	const addLink = () => set_resources([...resources, { id: ids++, url: "", descriptor: "" }]);
-	const removeLink = (id) => set_resources(resources.filter(l => l.id != id));
-	const edit_link_descriptor = (id, descriptor) => set_resources(resources.map(l => (l.id == id ? { ...l, descriptor } : l)));
-	const edit_link_url = (id, url) => set_resources(resources.map(l => (l.id == id ? { ...l, url } : l)));
+	const removeLink = (id) => set_resources(resources.filter(l => l.id !== id));
+	const edit_link_descriptor = (id, descriptor) => set_resources(resources.map(l => (l.id === id ? { ...l, descriptor } : l)));
+	const edit_link_url = (id, url) => set_resources(resources.map(l => (l.id === id ? { ...l, url } : l)));
 
-	const removeImage = (id) => set_images(images.filter(img => img.id != id));
+	const removeImage = (id) => set_images(images.filter(img => img.id !== id));
 
 	const hasImages = (images || []).length > 0;
 	const hasComments = (comments || []).length > 0;
@@ -298,8 +298,10 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 	const endIndex = edit ? images.length : startIndex + 4;
 	const showImages = [...images].reverse().slice(startIndex, endIndex);
 	const _onOpen = (evt) => {
-		onOpen(evt);
-		document.activeElement.blur();
+		if (!open) {
+			onOpen(evt);
+			document.activeElement.blur();
+		}
 	}
 	return (
 		<div
@@ -308,17 +310,13 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 		>
 			{!removed ?
 				<div style={{ width: "100%" }}>
-					<div className="entry-header" ref={headerRef} onClick={_onOpen} tabIndex={!open ? 0 : -1} onKeyDown={(evt) => {
-						if (evt.key == "Enter" && !open) {
-							_onOpen();
-						}
-					}}>
+					<div className="entry-header" ref={headerRef} onClick={_onOpen} tabIndex={!open ? 0 : -1} onKeyDown={(evt) => evt.key === "Enter" && _onOpen(evt)}>
 						{<div className="title-container" style={{ height: titleHeight || 0 }}>
 							<h3 className={`${hasPreviewImage ? '' : 'no-preview-image'} ${starred ? 'starred' : ''}`} ref={titleRef}>
 								{!edit
-									? <>{(open || mode == "image") && <button className="arrow" onClick={onClose} tabIndex={open ? 0 : -1}><div>➳</div></button>}
-										{(open || mode == "image") && <button className="star" onClick={onStar} tabIndex={open ? 0 : -1}><div>{starred ? "✦" : "✧"}</div></button>}
-										{(open || mode == "image") && user?.admin && <button className="edit active" onClick={() => setEdit(true)} tabIndex={open ? 0 : -1}><div>✎</div></button>}
+									? <>{(open || mode === "image") && <button className="arrow" onClick={onClose} tabIndex={open ? 0 : -1}><div>➳</div></button>}
+										{(open || mode === "image") && <button className="star" onClick={onStar} tabIndex={open ? 0 : -1}><div>{starred ? "✦" : "✧"}</div></button>}
+										{(open || mode === "image") && user?.admin && <button className="edit active" onClick={() => setEdit(true)} tabIndex={open ? 0 : -1}><div>✎</div></button>}
 										<span className="name">
 											{open ?
 												<Link to={`/entry/${entry._id}`} ref={nameRef} className="link">
@@ -440,7 +438,7 @@ function Resource({ link: { descriptor, url, favicons }, open }) {
 				{descriptor}:
 			</h4>
 			<a href={url} target="_blank" rel="noreferrer noopener" className="url" tabIndex={open ? 0 : -1}>url{favSrc
-				? <div className="url-icon"><img src={favSrc} /></div>
+				? <div className="url-icon"><img src={favSrc} alt="favicon" /></div>
 				: "🔗"}
 			</a>
 		</div>
