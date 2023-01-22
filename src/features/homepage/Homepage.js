@@ -7,6 +7,8 @@ import "./Homepage.scss";
 import { selectUser } from "./userSlice";
 import { selectEntries, setEntries } from "./entriesSlice";
 
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 let ids = 0;
 
 const calcCols = () => Math.ceil(window.innerWidth / 500)
@@ -234,7 +236,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 		// 	return;
 
 		if (removed) {
-			fetch(process.env.REACT_APP_API_BASE_URL + "entries/" + entry._id,
+			fetch(BASE_URL + "entries/" + entry._id,
 				{ credentials: "include", method: "DELETE", headers: { "Content-Type": "application/json" } })
 				.then((res) => {
 					console.log(res);
@@ -258,7 +260,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 			};
 			console.log("newEntry", newEntry);
 
-			fetch(process.env.REACT_APP_API_BASE_URL + "entries" + (newEntry._id ? ("/" + newEntry._id) : ""),
+			fetch(BASE_URL + "entries" + (newEntry._id ? ("/" + newEntry._id) : ""),
 				{ credentials: "include", method, body: JSON.stringify(newEntry), headers: { "Content-Type": "application/json" } })
 				.then((res) => {
 					console.log(res);
@@ -284,6 +286,11 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 		setEdit(false);
 	}
 
+	const onClickPreviewImage = (evt) => {
+		if (!open)
+			evt.preventDefault();
+	}
+
 	const submitDisabled = !name; // || resources.some(l => !l.descriptor || !l.url);
 	const nameRef = useRef(null);
 
@@ -298,36 +305,42 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 		>
 			{!removed ?
 				<div style={{ width: "100%" }}>
-					<div className="entry-header" ref={headerRef} onClick={onOpen} tabIndex={mode == "image" && !open ? 0 : -1} onKeyDown={(evt) => {
-						if (evt.key == "Enter" && document.activeElement === evt.target && onOpen)
+					<div className="entry-header" ref={headerRef} onClick={onOpen} tabIndex={!open ? 0 : -1} onKeyDown={(evt) => {
+						if (evt.key == "Enter" && !open && onOpen) {
 							onOpen();
+							evt.target.blur();
+							// evt.preventDefault();
+						}
 					}}>
 						{<div className="title-container" style={{ height: titleHeight || 0 }}>
 							<h3 className={`${hasPreviewImage ? '' : 'no-preview-image'} ${starred ? 'starred' : ''}`} ref={titleRef}>
 								{!edit
-									? <>{(open || mode == "image") && <button className="arrow focus-color" onClick={onClose}><div>➳</div></button>}
-										{(open || mode == "image") && <button className="star focus-color" onClick={onStar}><div>{starred ? "✦" : "✧"}</div></button>}
-										{(open || mode == "image") && user?.admin && <button className="edit active focus-color" onClick={() => setEdit(true)}><div>✎</div></button>}
+									? <>{(open || mode == "image") && <button className="arrow" onClick={onClose} tabIndex={open ? 0 : -1}><div>➳</div></button>}
+										{(open || mode == "image") && <button className="star" onClick={onStar} tabIndex={open ? 0 : -1}><div>{starred ? "✦" : "✧"}</div></button>}
+										{(open || mode == "image") && user?.admin && <button className="edit active" onClick={() => setEdit(true)} tabIndex={open ? 0 : -1}><div>✎</div></button>}
 										<span className="name">
 											{open ?
 												<Link to={`/entry/${entry._id}`} ref={nameRef} className="link">
 													{name || "[undefined]"}
 												</Link>
-												: <button >{name || "[undefined]"}</button>
+												: <button tabIndex="-1">{name || "[undefined]"}</button>
 											}
 										</span>
 									</>
-									: <>
-										<input className="focus-color" type="text" placeholder="name" value={name} onChange={(evt) => set_name(evt.target.value)}></input>
-									</>
+									: <input type="text" placeholder="name" value={name} onChange={(evt) => set_name(evt.target.value)}></input>
 								}
 							</h3>
 							{edit &&
 								<button className="active" onClick={onClickRemove}><div>×</div></button>
 							}
 						</div>}
+						{/* {hasPreviewImage && images.map(image =>
+							<img alt={name} className="preview-image" src={BASE_URL + image.path} />
+						)} */}
 						{hasPreviewImage &&
-							<img alt={name} className="preview-image" src={process.env.REACT_APP_API_BASE_URL + images[images.length - 1].path} />
+							<Link to={`/entry/${entry._id}?cr=true&cc=true`} onClick={onClickPreviewImage} className="image-link" tabIndex={open ? 0 : -1}>
+								<img alt={name} className="preview-image" src={BASE_URL + images[images.length - 1].path} />
+							</Link>
 						}
 					</div>
 					<div className="body" ref={ref} >
@@ -337,7 +350,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 									{(resources || []).map((link, i) =>
 										<li className="resource-li" key={i}>
 											{!edit
-												? <Resource link={link} />
+												? <Resource link={link} open={open} />
 												: <EditResource
 													link={link}
 													onRemove={() => removeLink(link.id)}
@@ -351,12 +364,14 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 								{/* <div className="trailing"><a className="url">resources: ({(resources || []).length})</a></div> */}
 								<div className="trailing">
 									{!edit
-										? <Link className="url" to={`/entry/${entry._id}?ci=true&cc=true`}>
+										? <Link className="url" to={`/entry/${entry._id}?ci=true&cc=true`} tabIndex={open ? 0 : -1}>
 											resources: ({(resources || []).length})
 										</Link>
 										: <>
 											<div className="url">	resources: ({(resources || []).length})
-											</div> <span className="active-link"><button className="active active-bold" onClick={addLink}><div>+</div></button></span>
+											</div> <span className="active-link">
+												<button className="active active-bold" onClick={addLink} tabIndex={open ? 0 : -1}><div>+</div></button>
+											</span>
 										</>}
 								</div>
 							</div>
@@ -367,16 +382,16 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 								{/* <h5>images:</h5> */}
 								<div className="images">
 									{showImages.map((img, i) =>
-										<div className="image-container" key={img.id} >
-											<img alt={name} src={process.env.REACT_APP_API_BASE_URL + img.path} />
+										<Link className="image-container image-link" key={img.id} to={`/entry/${entry._id}?cr=true&cc=true`} tabIndex={open ? 0 : -1}>
+											<img alt={name} src={BASE_URL + img.path} />
 											{edit &&
 												<div className="active active-bold" onClick={() => removeImage(img.id)}><div>×</div></div>
 											}
-										</div>
+										</Link>
 									)}
 								</div>
 								<div className="trailing">
-									<Link className="url" to={`/entry/${entry._id}?cr=true&cc=true`}>images: ({images.length})</Link>
+									<Link className="url" to={`/entry/${entry._id}?cr=true&cc=true`} tabIndex={open ? 0 : -1}>images: ({images.length})</Link>
 								</div>
 							</div>
 						}
@@ -391,7 +406,9 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 											{text}</div>
 									)}
 								</div>
-								<div className="trailing"><Link className="url" to={`/entry/${entry._id}?cr=true&ci=true`}>comments: ({comments.length})</Link></div>
+								<div className="trailing">
+									<Link className="url" to={`/entry/${entry._id}?cr=true&ci=true`} tabIndex={open ? 0 : -1}>comments: ({comments.length})</Link>
+								</div>
 							</div>
 						}
 						{/* <div className="divider" /> */}
@@ -412,16 +429,16 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 }
 
 
-function Resource({ link: { descriptor, url, favicons } }) {
+function Resource({ link: { descriptor, url, favicons, open } }) {
 	const favSrc = favicons?.icons[0]?.src;
 
 	return (
 		<div className="link">
-			<button className="star active-bold focus-color"><div>✧</div></button>
+			<button className="star active-bold" tabIndex={open ? 0 : -1}><div>✧</div></button>
 			<h4>
 				{descriptor}:
 			</h4>
-			<a href={url} target="_blank" rel="noreferrer noopener" className="url">url{favSrc
+			<a href={url} target="_blank" rel="noreferrer noopener" className="url" tabIndex={open ? 0 : -1}>url{favSrc
 				? <div className="url-icon"><img src={favSrc} /></div>
 				: "🔗"}
 			</a>
@@ -435,9 +452,9 @@ function EditResource({ link, onRemove, onChangeDescriptor, onChangeUrl }) {
 	return (
 		<div className="edit-link link">
 			<h4>
-				<input className="focus-color" type="text" placeholder="descriptor" value={descriptor} onChange={onChangeDescriptor} /> :&nbsp;
+				<input type="text" placeholder="descriptor" value={descriptor} onChange={onChangeDescriptor} /> :&nbsp;
 			</h4>
-			<h4 className="url-input">	<input className="focus-color" type="text" placeholder="url" value={url} onChange={onChangeUrl} />
+			<h4 className="url-input"><input type="text" placeholder="url" value={url} onChange={onChangeUrl} />
 			</h4>
 			<button className="active active-bold" onClick={onRemove}><div>×</div></button>
 		</div>

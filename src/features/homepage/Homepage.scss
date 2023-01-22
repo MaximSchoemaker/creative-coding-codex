@@ -53,7 +53,7 @@
     font-weight: 500;
     font-size: 16px;
     margin: 0;
-    transition: 0.5s, background-color 0s, flex 0s;
+    transition: font-size 0.5s;
     min-height: 0;
 
     a {
@@ -255,7 +255,7 @@
         &:not(.mode-text).has-preview-image:not(.open) {
           padding-bottom: 15px;
         }
-
+        
         // margin-left: 10px;
 
         .name {
@@ -267,21 +267,28 @@
             height: auto;
           }
         }
-        &:not(.open) .entry-header:hover {
-          .name {
-            text-decoration: underline;
-            .link {
-              pointer-events: none;
+        &:not(.open) {
+          .entry-header:hover {
+            .name {
+              text-decoration: underline;
             }
           }
-          cursor: pointer;
-          & h3:after {
-            font-size: 1rem;
-            position: absolute;
-            right: 0;
-            content: " ↩";
+          .entry-header:hover, .entry-header:focus-within {
+            // .name {
+            //   text-decoration: underline;
+            //   .link {
+            //     pointer-events: none;
+            //   }
+            // }
+            cursor: pointer;
+            & h3:after {
+              font-size: 1rem;
+              position: absolute;
+              right: 0;
+              content: " ↩";
+            }
           }
-        }
+       }
 
         .entry-header {
           min-height: 0;
@@ -291,7 +298,10 @@
 
           .title-container {
             transition: height 0.15s;
-
+            
+            h3 {
+              position: relative;
+            }
             .name button {
               text-align: left;
             }
@@ -315,7 +325,7 @@
             transition: 1s;
           }
 
-          &:hover {
+          &:hover, &:focus-within {
             .preview-image {
               opacity: 1;
               transition: 1s, opacity 0.333s;
@@ -523,6 +533,12 @@
             font-size: 0;
           }
         }
+        &:not(.mode-image) {
+          .entry-header {
+            padding-left: 1em;
+            margin-left: -1em;
+          }
+        }
         &:not(.open) {
           &.mode-image {
             h3 {
@@ -538,6 +554,7 @@
               left: -1em;
               position: absolute;
               content: "✦";
+              transition: none !important;
             }
           }
 
