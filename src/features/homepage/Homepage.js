@@ -227,10 +227,17 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 		localStorage.setItem("starredEntries", JSON.stringify(starredEntries));
 	}
 
-	console.log(resources);
-	const previewImageSrc = images.length
-		? BASE_URL + images[images.length - 1].path
-		: resources.find(r => r.metadata.image)?.metadata.image
+	// const randomImageRef = useRef(Math.floor(Math.random() * images.length));
+	// const resourceImages = resources.map(r => r.metadata.image).filter(img => !!img);
+	// const randomResourceImageRef = useRef(Math.floor(Math.random() * resourceImages.length));
+
+	// const previewImageSrc = mode === "image"
+	// 	? images.length && (BASE_URL + images.at(-1).path)
+	// 	: images.length
+	// 		? BASE_URL + images.at(-1).path
+	// 		: resourceImages[randomResourceImageRef.current]
+
+	const previewImageSrc = !!images.length && (BASE_URL + images.at(-1).path)
 	const hasPreviewImage = mode.match("image") && previewImageSrc;
 
 
