@@ -297,7 +297,10 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 	const startIndex = !edit && hasPreviewImage ? 1 : 0;
 	const endIndex = edit ? images.length : startIndex + 4;
 	const showImages = [...images].reverse().slice(startIndex, endIndex);
-
+	const _onOpen = (evt) => {
+		onOpen(evt);
+		document.activeElement.blur();
+	}
 	return (
 		<div
 			className={`entry ${open ? 'open' : ''} mode-${mode} ${edit ? 'edit-entry' : ''} ${removed ? "removed" : ''} ${hasPreviewImage ? 'has-preview-image' : 'no-preview-image'}`}
@@ -305,11 +308,9 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 		>
 			{!removed ?
 				<div style={{ width: "100%" }}>
-					<div className="entry-header" ref={headerRef} onClick={onOpen} tabIndex={!open ? 0 : -1} onKeyDown={(evt) => {
-						if (evt.key == "Enter" && !open && onOpen) {
-							onOpen();
-							evt.target.blur();
-							// evt.preventDefault();
+					<div className="entry-header" ref={headerRef} onClick={_onOpen} tabIndex={!open ? 0 : -1} onKeyDown={(evt) => {
+						if (evt.key == "Enter" && !open) {
+							_onOpen();
 						}
 					}}>
 						{<div className="title-container" style={{ height: titleHeight || 0 }}>
@@ -429,7 +430,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 }
 
 
-function Resource({ link: { descriptor, url, favicons, open } }) {
+function Resource({ link: { descriptor, url, favicons }, open }) {
 	const favSrc = favicons?.icons[0]?.src;
 
 	return (
