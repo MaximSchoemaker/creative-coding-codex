@@ -227,7 +227,11 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 		localStorage.setItem("starredEntries", JSON.stringify(starredEntries));
 	}
 
-	const hasPreviewImage = mode.match("image") && hasImages;
+	console.log(resources);
+	const previewImageSrc = images.length
+		? BASE_URL + images[images.length - 1].path
+		: resources.find(r => r.metadata.image)?.metadata.image
+	const hasPreviewImage = mode.match("image") && previewImageSrc;
 
 
 	const dispatch = useDispatch();
@@ -339,7 +343,7 @@ function Entry({ entry, open, onOpen, onClose, mode, edit, method, onRemove, onS
 						)} */}
 						{hasPreviewImage &&
 							<Link to={`/entry/${entry._id}?cr=true&cc=true`} onClick={onClickPreviewImage} className="image-link" tabIndex={open ? 0 : -1}>
-								<img alt={name} className="preview-image" src={BASE_URL + images[images.length - 1].path} />
+								<img alt={name} className="preview-image" src={previewImageSrc} />
 							</Link>
 						}
 					</div>
