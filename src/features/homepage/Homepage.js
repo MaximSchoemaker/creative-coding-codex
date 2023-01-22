@@ -67,9 +67,10 @@ export function Homepage({ theme }) {
 
 	const cats = Object.entries(categories).sort(([cat1], [cat2]) => cat1.localeCompare(cat2));
 	const n = cats.length;
-	const columns = [];
-	for (let i = 0; i < cols && cats.length; i++)
-		columns[i] = cats.splice(0, Math.ceil((1 / cols) * n));
+	const columns = new Array(cols).fill(null).map(() => []);
+	for (let i = 0; i < cols; i++)
+		while ((n - cats.length) < (i + 1) * n / cols)
+			columns[i].push(cats.shift());
 
 	if (!columns.length)
 		columns[0] = [["?", []]];
